@@ -1,2 +1,3 @@
-# deployables.ocp
-This repository contains the Ansible collection used to provision and configure SNO instances on deployables
+# Ansible Collection - deployables.ocp
+
+Documentation for the collection.
