@@ -1,0 +1,65 @@
+---
+- name: Configure the Witness Node
+  hosts: witness
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Update system
+      ansible.builtin.dnf:
+        name: '*'
+        state: latest
+
+    - name: Install useful packages
+      ansible.builtin.dnf:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - tmux
+
+    - name: Install OpenShift Prerequisites (oc cli, pull-secret)
+      ansible.builtin.uri:
+        url: "{{ item.url }}"
+        owner: root
+        mode: u=rwX,g=rwX,o=-
+        dest: "{{ item.dest }}"
+        decompress: false
+        creates: "{{item.dest}}{{ item.artifact }}"
+      loop:
+        - url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-client-linux.tar.gz
+          dest: /var/tmp/
+          artifact: openshift-client-linux.tar.gz
+        - url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-install-linux.tar.gz
+          dest: /var/tmp/
+          artifact: openshift-install-linux.tar.gz
+        - url: https://developers.redhat.com/content-gateway/rest/mirror/pub/openshift-v4/clients/mirror-registry/latest/mirror-registry.tar.gz
+          dest: /var/tmp/
+          artifact: mirror-registry.tar.gz
+        - url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/oc-mirror.tar.gz
+          dest: /var/tmp/
+          artifact: oc-mirror.tar.gz
+
+    - name: Untar the tools
+      ansible.builtin.unarchive:
+        creates: "{{ item.dest_path}}{{ item.artifact }}"
+        dest: "{{ item.dest_path }}"
+        mode: u=rX,g=rX,o=rX
+        owner: root
+        remote_src: true
+        src: "{{ item.src_path }}"
+      loop:
+        - src_path: /var/tmp/openshift-client-linux.tar.gz
+          dest_path: /usr/local/bin/
+          artifact: oc
+        - src_path: /var/tmp/openshift-install-linux.tar.gz
+          dest_path: /usr/local/bin/
+          artifact: openshift-install
+        - src_path: /var/tmp/mirror-registry.tar.gz
+          dest_path: /usr/local/bin/
+          artifact: mirror-registry
+        - src_path: /var/tmp/oc-mirror.tar.gz
+          dest_path: /usr/local/bin/
+          artifact: oc-mirror
+
+    # - name: Deploy Satellite Capsule
+    # - name: Deploy AAP
+    # - name: Deploy Quay (Mirror Registry)
