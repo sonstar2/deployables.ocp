@@ -4,7 +4,7 @@
   gather_facts: true
   become: true
   pre_tasks:
-    - name: Update system
+    - name: Update system # noqa: package-latest
       ansible.builtin.dnf:
         name: '*'
         state: latest
@@ -23,7 +23,7 @@
         mode: u=rwX,g=rwX,o=-
         dest: "{{ item.dest }}"
         decompress: false
-        creates: "{{item.dest}}{{ item.artifact }}"
+        creates: "{{ item.dest }}{{ item.artifact }}"
       loop:
         - url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-client-linux.tar.gz
           dest: /var/tmp/
@@ -40,7 +40,7 @@
 
     - name: Untar the tools
       ansible.builtin.unarchive:
-        creates: "{{ item.dest_path}}{{ item.artifact }}"
+        creates: "{{ item.dest_path }}{{ item.artifact }}"
         dest: "{{ item.dest_path }}"
         mode: u=rX,g=rX,o=rX
         owner: root
@@ -59,6 +59,7 @@
         - src_path: /var/tmp/oc-mirror.tar.gz
           dest_path: /usr/local/bin/
           artifact: oc-mirror
+
     - name: Configure pull-secret
       ansible.builtin.copy:
         content: "{{ pull_secret }}"
