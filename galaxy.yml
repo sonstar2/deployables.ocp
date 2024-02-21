@@ -42,6 +42,7 @@ tags: []
 # range specifiers can be set and are separated by ','
 dependencies:
   - community.general
+  - ansible.posix
 
 # The URL of the originating SCM repository
 repository: http://example.com/repository

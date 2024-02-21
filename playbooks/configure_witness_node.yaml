@@ -3,7 +3,7 @@
   hosts: witness
   gather_facts: true
   become: true
-  tasks:
+  pre_tasks:
     - name: Update system
       ansible.builtin.dnf:
         name: '*'
@@ -16,7 +16,7 @@
       loop:
         - tmux
 
-    - name: Install OpenShift Prerequisites (oc cli, pull-secret)
+    - name: Install OpenShift Prerequisites
       ansible.builtin.uri:
         url: "{{ item.url }}"
         owner: root
@@ -59,7 +59,19 @@
         - src_path: /var/tmp/oc-mirror.tar.gz
           dest_path: /usr/local/bin/
           artifact: oc-mirror
+    - name: Configure pull-secret
+      ansible.builtin.copy:
+        content: "{{ pull_secret }}"
+        dest: /etc/containers/auth.json
+        owner: ansible
+        group: ansible
+        mode: u=rwX,g=rX,o=-
+
+  tasks:
+    - name: Provision Quay
+      ansible.builtin.import_role:
+        name: provision_quay
 
     # - name: Deploy Satellite Capsule
     # - name: Deploy AAP
-    # - name: Deploy Quay (Mirror Registry)
+    # - name:
