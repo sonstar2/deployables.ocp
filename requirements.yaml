@@ -1,0 +1,11 @@
+collections:
+  - source: ansible-posix-1.5.4.tar.gz
+    type: file
+  - source: community-general-8.3.0.tar.gz
+    type: file
+  - source: redhat-satellite_operations-2.1.0.tar.gz
+    type: file
+  - source: redhat-satellite-4.0.0.tar.gz
+    type: file
+  - source: redhat-rhel_system_roles-1.22.0.tar.gz
+    type: file

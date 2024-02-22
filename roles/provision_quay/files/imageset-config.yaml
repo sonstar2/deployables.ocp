@@ -1,0 +1,33 @@
+---
+apiVersion: mirror.openshift.io/v1alpha2
+kind: ImageSetConfiguration
+storageConfig:
+  local:
+    path: ./archive
+mirror:
+  platform:
+    channels:
+    - name: stable-4.14                                             
+      type: ocp
+    graph: true
+  operators:
+    - catalog: registry.redhat.io/redhat/redhat-operator-index:v4.14
+      packages:
+        - name: openshift-gitops-operator
+          channels:
+             - name: latest
+        - name: kubernetes-nmstate-operator
+          channels:
+            - name: stable
+        - name: kubevirt-hyperconverged
+          channels:
+            - name: stable
+        - name: local-storage-operator
+          channels:
+            - name: stable
+        - name: odf-operator
+          channels:
+            - name: stable-4.14
+  additionalImages:
+    - name: registry.redhat.io/ubi9/ubi:latest                        
+  helm: {}

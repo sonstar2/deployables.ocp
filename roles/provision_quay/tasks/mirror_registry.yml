@@ -1,0 +1,36 @@
+---
+- name: Configure mirror registry directory
+  ansible.builtin.file:
+    path: /var/mirror_registry
+    mode: u=rwX,g=rwX,o=-
+    owner: root
+    group: root
+  become: true
+
+- name: Copy over image archive for initial import
+  ansible.builtin.copy:
+    src: mirror_seq1_000000.tar
+    dest: /var/tmp/
+    mode: u=rwX,g=rwX,o=rX
+    owner: root
+    group: root
+  become: true
+
+- name: Deploy the mirror registry
+  ansible.builtin.shell:
+    cmd: |
+      mirror-registry install \
+      --quayHostname {{ ansible_hostname }} \
+      --quayRoot /var/mirror_registry \
+      --image-archive /var/tmp/archive.tar.gz \
+      --askBecomePass false \
+      --sslCheckSkip \
+      --no-color
+  become: true
+
+- name: Push oc-mirror content to the mirror registry
+  ansible.builtin:shell:
+    cmd: |
+      oc-mirror --from=/var/tmp/mirror_seq1_000000.tar \
+      docker://witness-node.uotest01.poc.lab.local:5000
+  become: true

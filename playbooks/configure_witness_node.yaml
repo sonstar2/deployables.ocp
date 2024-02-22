@@ -4,6 +4,20 @@
   gather_facts: true
   become: true
   pre_tasks:
+    - name: Enable cockpit
+      ansible.builtin.systemd:
+        name: cockpit.socket
+        state: started
+        enabled: true
+
+    - name: Register Witness Node
+      ansible.builtin.import_role:
+        name: redhat.rhel_system_roles.rhc
+
+    - name: Configure Cockpit
+      ansible.builtin.import_role:
+        name: redhat.rhel_system_roles.cockpit
+
     - name: Update system # noqa: package-latest
       ansible.builtin.dnf:
         name: '*'
