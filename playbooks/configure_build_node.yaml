@@ -1,5 +1,5 @@
 ---
-- name: Configure the Witness Node
+- name: Configure the Build Node
   hosts: witness
   gather_facts: true
   become: true
@@ -10,7 +10,7 @@
         state: started
         enabled: true
 
-    - name: Register Witness Node
+    - name: Register Build Node
       ansible.builtin.import_role:
         name: redhat.rhel_system_roles.rhc
 
@@ -29,6 +29,7 @@
         state: present
       loop:
         - tmux
+        - /usr/bin/nmstatectl
 
     - name: Install OpenShift Prerequisites
       ansible.builtin.uri:

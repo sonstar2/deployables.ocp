@@ -29,5 +29,6 @@ mirror:
           channels:
             - name: stable-4.14
   additionalImages:
-    - name: registry.redhat.io/ubi9/ubi:latest                        
+    - name: registry.redhat.io/ubi9/ubi:latest
+  #- name: server2012 vm image
   helm: {}

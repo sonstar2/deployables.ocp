@@ -1,2 +1,5 @@
 ---
 # tasks file for sno_deploy
+- name: Configure prerequisites
+  ansible.builtin.import_tasks:
+    file: prerequisites.yml

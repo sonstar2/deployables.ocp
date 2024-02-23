@@ -34,6 +34,7 @@ all:
         password: !vault |
           $ANSIBLE_VAULT;1.1;AES256
           <password>
+    mirror_registry_init_password: ""
   children:
     witness:
       hosts:

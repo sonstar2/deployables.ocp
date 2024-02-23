@@ -1,0 +1,52 @@
+---
+- name: Ensure cluster configuration directory exists
+  ansible.builtin.file:
+    path: /home/ansible/clusterconfigs
+  become: false
+
+# https://docs.openshift.com/container-platform/4.14/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html
+- name: Ensure all required packages are installed
+  ansible.builtin.dnf:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - libvirt
+    - qemu-kvm
+    - mkisofs
+    - python3-devel
+    - jq
+    - ipmitool
+  become: true
+
+- name: Ensure firewalld is configured
+  ansible.posix.firewalld:
+    immediate: true
+    permanent: true
+    service: http
+    state: enabled
+  become: true
+
+- name: Ensure libvirt storage pool is defined
+  community.libvirt.virt_pool:
+    name: default
+    autostart: true
+    command: define
+    state: active
+    xml: "{{ lookup('template', 'storage_pool.xml')}}"
+  become: true
+
+- name: Ensure network interfaces are configured
+  ansible.builtin.import_role:
+    name: redhat.rhel_system_roles.network
+
+- name: Ensure install-config.yaml exists
+  ansible.builtin.copy:
+    content: "{{ lookup('template', 'install-config.yaml') }}"
+    dest: /home/ansible/clusterconfigs/install-config.yaml
+
+- name: Message
+  ansible.builtin.debug:
+    msg: "Please review the contents of the install-config.yaml before proceeding."
+
+
+

@@ -3,6 +3,6 @@
 - name: Configure firewalld
   ansible.builtin.import_tasks:
     file: firewalld.yml
-# - name: Deploy Mirror Registry
-#   ansible.builtin.import_tasks:
-#     file: mirror_registry.yml
+- name: Deploy Mirror Registry
+  ansible.builtin.import_tasks:
+    file: mirror_registry.yml

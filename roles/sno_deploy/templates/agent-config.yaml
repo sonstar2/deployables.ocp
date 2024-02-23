@@ -1,51 +1,80 @@
 apiVersion: v1alpha1
 kind: AgentConfig
-rendezvousIP: 10.10.10.14
+rendezvousIP: 192.168.1.8
 hosts:
   - hostname: master0
     role: master
     interfaces:
-      - name: enp0s4
-        macAddress: 00:21:50:90:c0:10
-      - name: enp0s5
-        macAddress: 00:21:50:90:c0:20
+      - name: enp0s0
+        macAddress: b4:45:06:f2:a4:91
+      - name: enp0s1
+        macAddress: b4:45:06:f2:a4:92
     networkConfig:
       interfaces:
-        - name: bond0.300
-          type: vlan
-          state: up
-          vlan:
-            base-iface: bond0
-            id: 300
-          ipv4:
-            enabled: true
-            address:
-              - ip: 10.10.10.14
-                prefix-length: 24
-            dhcp: false
         - name: bond0
           type: bond
           state: up
-          mac-address: 00:21:50:90:c0:10
+          mac-address: b4:45:06:f2:a4:91
           ipv4:
-            enabled: false
+            enabled: true
+            address:
+              - ip: 192.168.1.8
+                prefix-length: 24
+            dhcp: false
           ipv6:
             enabled: false
           link-aggregation:
-            mode: active-backup
+            mode: 802.3ad
             options:
               miimon: "150"
             port:
-              - enp0s4
-              - enp0s5
+              - enp0s0
+              - enp1s1
       dns-resolver:
         config:
           server:
-            - 10.10.10.11
-            - 10.10.10.12
+            - 172.18.0.20
       routes:
         config:
           - destination: 0.0.0.0/0
-            next-hop-address: 10.10.10.10
-            next-hop-interface: bond0.300
+            next-hop-address: 192.168.1.1
+            next-hop-interface: bond0
+            table-id: 254
+  - hostname: worker0
+    role: worker
+    interfaces:
+      - name: enp0s1
+        macAddress: b4:45:06:f2:a4:91
+      - name: enp1s0
+        macAddress: b4:45:06:f2:a4:92
+    networkConfig:
+      interfaces:
+        - name: bond0
+          type: bond
+          state: up
+          mac-address: b4:45:06:f2:a4:91
+          ipv4:
+            enabled: true
+            address:
+              - ip: 192.168.1.9
+                prefix-length: 24
+            dhcp: false
+          ipv6:
+            enabled: false
+          link-aggregation:
+            mode: 802.3ad
+            options:
+              miimon: "150"
+            port:
+              - enp0s0
+              - enp1s1
+      dns-resolver:
+        config:
+          server:
+            - 172.18.0.20
+      routes:
+        config:
+          - destination: 0.0.0.0/0
+            next-hop-address: 192.168.1.1
+            next-hop-interface: bond0
             table-id: 254
