@@ -87,6 +87,12 @@
     - name: Provision Quay
       ansible.builtin.import_role:
         name: provision_quay
+    
+    - name: Prepare for OpenShift Deployment
+      ansible.builtin.import_role:
+        name: sno_deploy
+      tags:
+        - openshift-deploy
 
     # - name: Deploy Satellite Capsule
     # - name: Deploy AAP

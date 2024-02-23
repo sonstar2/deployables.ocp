@@ -2,6 +2,10 @@
 - name: Ensure cluster configuration directory exists
   ansible.builtin.file:
     path: /home/ansible/clusterconfigs
+    owner: ansible
+    group: ansible
+    mode: u=rwX,g=rwX,o=-
+    state: directory
   become: false
 
 # https://docs.openshift.com/container-platform/4.14/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html
@@ -29,10 +33,15 @@
 - name: Ensure libvirt storage pool is defined
   community.libvirt.virt_pool:
     name: default
-    autostart: true
     command: define
-    state: active
     xml: "{{ lookup('template', 'storage_pool.xml')}}"
+  become: true
+
+- name: Ensure libvirt storage pool is active
+  community.libvirt.virt_pool:
+    name: default
+    state: active
+    autostart: true
   become: true
 
 - name: Ensure network interfaces are configured
