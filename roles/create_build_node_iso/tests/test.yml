@@ -2,4 +2,4 @@
 - hosts: localhost
   remote_user: root
   roles:
-    - witness-node-configure
+    - create_build_node_iso

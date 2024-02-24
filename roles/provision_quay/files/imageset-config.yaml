@@ -30,5 +30,6 @@ mirror:
             - name: stable-4.14
   additionalImages:
     - name: registry.redhat.io/ubi9/ubi:latest
+    - name: registry.access.redhat.com/ubi9/httpd-24:latest
   #- name: server2012 vm image
   helm: {}

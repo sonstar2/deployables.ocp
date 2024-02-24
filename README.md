@@ -20,6 +20,9 @@ ansible-galaxy install -r requirements.yaml
 ### Prerequisites
 
 1. Ensure that you have the `oc-mirror` archive available
+1. Ensure you have the `openshift-baremetal-install` binary available
+  1. It should be placed in your working directory
+  1. This isn't kept in the repository to save space
 
 ### Run the playbook
 

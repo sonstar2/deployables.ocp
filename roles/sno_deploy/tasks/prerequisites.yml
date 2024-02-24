@@ -22,7 +22,12 @@
     - ipmitool
   become: true
 
-- name: Ensure firewalld is configured
+- name: Ensure the Ansible user has correct permissions for libvirt
+  ansible.builtin.user:
+    name: ansible
+    groups: libvirt
+
+- name: Ensure firewalld allows http service
   ansible.posix.firewalld:
     immediate: true
     permanent: true
@@ -30,11 +35,19 @@
     state: enabled
   become: true
 
+- name: Ensure firewalld allows 8080/tcp service
+  ansible.posix.firewalld:
+    immediate: true
+    permanent: true
+    port: 8080/tcp
+    state: enabled
+  become: true
+
 - name: Ensure libvirt storage pool is defined
   community.libvirt.virt_pool:
     name: default
     command: define
-    xml: "{{ lookup('template', 'storage_pool.xml')}}"
+    xml: "{{ lookup('template', 'storage_pool.xml') }}"
   become: true
 
 - name: Ensure libvirt storage pool is active
@@ -48,14 +61,31 @@
   ansible.builtin.import_role:
     name: redhat.rhel_system_roles.network
 
+- name: Ensure RHCOS image cache directory is available
+  ansible.builtin.file:
+    path: /home/ansible/rhcos_image_cache
+    state: directory
+    owner: ansible
+    group: ansible
+    mode: u=rwX,g=rwX,o=-
+    setype: httpd_sys_content_t
+
 - name: Ensure install-config.yaml exists
   ansible.builtin.copy:
     content: "{{ lookup('template', 'install-config.yaml') }}"
     dest: /home/ansible/clusterconfigs/install-config.yaml
+    owner: ansible
+    group: ansible
+    mode: u=rwX,g=rwX,o=-
+  become: false
 
 - name: Message
   ansible.builtin.debug:
-    msg: "Please review the contents of the install-config.yaml before proceeding."
-
-
-
+    msg: |
+      Please review the contents of the install-config.yaml before proceeding.
+      You will also need to manually start the RHCOS image cache server
+      
+      podman run -d --name rhcos_image_cache \ 
+      -v /home/ansible/rhcos_image_cache:/var/www/html \
+      -p 8080:8080/tcp \
+      registry.access.redhat.com/ubi9/httpd-24:latest

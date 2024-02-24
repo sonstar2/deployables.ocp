@@ -1,0 +1,6 @@
+- name: Create build node ISO
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  roles:
+    - role: create_build_iso

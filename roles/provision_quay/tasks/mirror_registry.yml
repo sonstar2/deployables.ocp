@@ -13,9 +13,9 @@
     src: archive/mirror_seq1_000000.tar
     dest: /home/ansible/
     mode: u=rwX,g=rwX,o=rX
-    owner: root
-    group: root
-  become: true
+    owner: ansible
+    group: ansible
+  become: false
 
 - name: Deploy the mirror registry
   ansible.builtin.shell:
@@ -30,6 +30,21 @@
     creates: /home/ansible/mirror_registry/quay-rootCA
   become: true
 
+- name: Configure local registry
+  ansible.builtin.copy:
+    content: |
+      [[registry]]
+      prefix = "registry.redhat.io"
+      location = "witness-node.uotest01.poc.lab.local:8443"
+
+      [[registry]]
+      prefix = "registry.access.redhat.com"
+      location = "witness-node.uotest01.poc.lab.local:8443"
+    dest: /etc/containers/registries.conf.d/010-mirror-registry.conf
+    owner: root
+    group: root
+    mode: u=rwX,g=rX,o=rX
+
 - name: Push oc-mirror content to the mirror registry
   ansible.builtin.shell:
     cmd: >-
@@ -41,6 +56,16 @@
       --dest-skip-tls 
       --from=/home/ansible/mirror_seq1_000000.tar 
       docker://{{ inventory_hostname }}:8443
-  become: true
+    creates: /home/ansible/oc-mirror-workspace/publish/.metadata.json
+  become: false
   tags:
    - mirror-push
+
+- name: Message
+  ansible.builtin.debug:
+    msg: |
+      You now need to create a pull-secret, by logging into the
+      mirror registry -> Account Settings -> Create encrypted password
+      -> Docker Configuration -> View init-auth.json.
+
+      Encrypt this as an Ansible Vault variable called "pull_secret".

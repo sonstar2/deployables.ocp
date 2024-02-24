@@ -1,0 +1,45 @@
+---
+# tasks file for create_build_node_iso
+- name: Ensure prerequisites are installed
+  ansible.builtin.dnf:
+    name: lorax
+    state: present
+  become: true
+
+- name: Ensure build directory exists
+  ansible.builtin.file:
+    dest: /var/tmp/build
+    mode: u=rwX,g=rwX,o=-
+    state: directory
+  become: false
+
+- name: Ensure RHEL9 ISO is available locally
+  ansible.builtin.uri:
+    url: "{{ rhel9_iso_url }}"
+    mode: u=rwX,g=rwX,o=-
+    dest: "/var/tmp/"
+    decompress: false
+    creates: "/var/tmp/build/rhel-9.3-x86_64-dvd.iso"
+  become: false
+
+- name: Ensure the kickstart file is available locally
+  ansible.builtin.copy:
+    content: "{{ lookup('template', 'ks.cfg.j2') }}"
+    dest: /var/tmp/build/ks.cfg
+    mode: u=rwX,g=rwX,o=-
+  become: false
+
+- name: Ensure the ISO has the kickstart file injected
+  ansible.builtin.shell:
+    cmd: |
+      mkksiso /var/tmp/build/ks.cfg /var/tmp/build/rhel-9.3-x86_64-dvd.iso /var/tmp/build/witness-node.iso
+    creates: /var/tmp/build/witness-node.iso
+  become: false
+
+- name: Final
+  ansible.builtin.debug:
+    msg: |
+      The witness node ISO has been generated and is available at:
+      /var/tmp/witness-node.iso
+
+      Using your preferred tool, 'burn' the ISO to a USB.

@@ -4,6 +4,16 @@
   gather_facts: true
   become: true
   pre_tasks:
+    - name: Configure sudoers.d for the Ansible user
+      community.general.sudoers:
+        name: 010-ansible-user
+        state: present
+        user: ansible
+        runas: ALL
+        host: ALL
+        commands: ALL
+        nopassword: true
+
     - name: Enable cockpit
       ansible.builtin.systemd:
         name: cockpit.socket
@@ -57,7 +67,7 @@
       ansible.builtin.unarchive:
         creates: "{{ item.dest_path }}{{ item.artifact }}"
         dest: "{{ item.dest_path }}"
-        mode: u=rX,g=rX,o=rX
+        mode: u=rx,g=rx,o=rx
         owner: root
         remote_src: true
         src: "{{ item.src_path }}"
@@ -75,6 +85,15 @@
           dest_path: /usr/local/bin/
           artifact: oc-mirror
 
+    - name: Ensure openshift-baremetal-install binary is available
+      ansible.builtin.copy:
+        src: ../openshift-baremetal-install
+        dest: /usr/local/bin/openshift-baremetal-install
+        owner: root
+        group: root
+        mode: u=rx,g=rx,o=rx
+      become: true
+
     - name: Configure pull-secret
       ansible.builtin.copy:
         content: "{{ pull_secret }}"
@@ -87,7 +106,7 @@
     - name: Provision Quay
       ansible.builtin.import_role:
         name: provision_quay
-    
+
     - name: Prepare for OpenShift Deployment
       ansible.builtin.import_role:
         name: sno_deploy
@@ -95,5 +114,3 @@
         - openshift-deploy
 
     # - name: Deploy Satellite Capsule
-    # - name: Deploy AAP
-    # - name:
