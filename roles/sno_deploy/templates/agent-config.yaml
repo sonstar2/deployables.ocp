@@ -1,0 +1,25 @@
+interfaces:
+  - name: bond0
+    description: Bond interface
+    type: bond
+    state: up
+    ipv4:
+      enabled: true
+      dhcp: true
+      auto-dns: true
+      auto-gateway: true
+      auto-routes: true
+    ipv6:
+      enabled: true
+      autoconf: true
+      dhcp: true
+      auto-dns: true
+      auto-gateway: true
+      auto-routes: true
+    link-aggregation:
+      mode: 802.3ad
+      options:
+        miimon: '100'
+      port:
+        - eno1np0
+        - eno2np1

@@ -1,5 +1,5 @@
 apiVersion: v1
-baseDomain: uotest1.poc.lab.local
+baseDomain: uotest01.poc.lab.local
 compute:
   - architecture: amd64 
     hyperthreading: Enabled
@@ -30,10 +30,8 @@ platform:
     ingressVIPs:
       - 192.168.1.6
     provisioningNetwork: Disabled
-    bootstrapExternalStaticIP: 192.168.1.3
-    bootstrapExternalStaticGateway: 192.168.1.1
-    bootstrapExternalStaticDNS: 172.18.0.20
     bootstrapOSImage: http://{{ inventory_hostname }}:8080/rhcos.qcow2.gz?sha256={{ rhcos_sha }}
+    externalMACAddress: 52:54:00:00:fa:01
     hosts:
       - name: master0
         role: master
@@ -51,10 +49,10 @@ platform:
               mac-address: b4:45:06:f1:0d:d1
               ipv4:
                 enabled: true
-                address:
-                  - ip: 192.168.1.8
-                    prefix-length: 24
-                dhcp: false
+                dhcp: true
+                auto-dns: true
+                auto-gateway: true
+                auto-routes: true
               ipv6:
                 enabled: false
               link-aggregation:
@@ -62,18 +60,10 @@ platform:
                 options:
                   miimon: "140"
                 port:
-                  - eno1np0
-                  - eno2np1
-          dns-resolver:
-            config:
-              server:
-                - 172.18.0.20
-          routes:
-            config:
-              - destination: 0.0.0.0/0
-                next-hop-address: 192.168.1.1
-                next-hop-interface: bond0
-                table-id: 254
+                  - eno1
+                  - eno2
+        rootDeviceHints:
+          deviceName: "/dev/nvme4n1"
       - name: worker0
         role: worker
         bmc:
@@ -81,7 +71,7 @@ platform:
           username: root
           password: "{{ worker_idrac_password }}"
           disableCertificateVerification: True
-        bootMACAddress: b4:45:06:f2:a4:91
+        bootMACAddress: b4:45:06:f1:11:37
         networkConfig:
           interfaces:
             - name: bond0
@@ -90,10 +80,10 @@ platform:
               mac-address: b4:45:06:f2:a4:91
               ipv4:
                 enabled: true
-                address:
-                  - ip: 192.168.1.9
-                    prefix-length: 24
-                dhcp: false
+                dhcp: true
+                auto-dns: true
+                auto-gateway: true
+                auto-routes: true
               ipv6:
                 enabled: false
               link-aggregation:
@@ -101,18 +91,10 @@ platform:
                 options:
                   miimon: "140"
                 port:
-                  - eno1np0
-                  - eno2np1
-          dns-resolver:
-            config:
-              server:
-                - 172.18.0.20
-          routes:
-            config:
-              - destination: 0.0.0.0/0
-                next-hop-address: 192.168.1.1
-                next-hop-interface: bond0
-                table-id: 254
+                  - eno1
+                  - eno2
+        rootDeviceHints:
+          deviceName: "/dev/nvme4n1"
 pullSecret: >-
   {{ pull_secret }}
 sshKey: "{{ ssh_pub_key }}"
