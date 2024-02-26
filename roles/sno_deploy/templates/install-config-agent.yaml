@@ -4,14 +4,12 @@ compute:
   - architecture: amd64 
     hyperthreading: Enabled
     name: worker
-    replicas: 1
+    replicas: 0
 controlPlane:
   architecture: amd64
   hyperthreading: Enabled
   name: master
   replicas: 1
-  platform:
-    baremetal: {}
 metadata:
   name: k8s
 networking:
@@ -24,77 +22,7 @@ networking:
   serviceNetwork:
     - 172.30.0.0/16
 platform:
-  baremetal:
-    apiVIPs:
-      - 192.168.1.5
-    ingressVIPs:
-      - 192.168.1.6
-    provisioningNetwork: Disabled
-    bootstrapOSImage: http://{{ inventory_hostname }}:8080/rhcos.qcow2.gz?sha256={{ rhcos_sha }}
-    externalMACAddress: 52:54:00:00:fa:01
-    hosts:
-      - name: master0
-        role: master
-        bmc:
-          address: idrac-virtualmedia://192.168.1.28/redfish/v1/Systems/System.Embedded.1
-          username: root
-          password: "{{ sno_idrac_password }}"
-          disableCertificateVerification: True
-        bootMACAddress: b4:45:06:f1:0d:d1
-        networkConfig:
-          interfaces:
-            - name: bond0
-              type: bond
-              state: up
-              mac-address: b4:45:06:f1:0d:d1
-              ipv4:
-                enabled: true
-                dhcp: true
-                auto-dns: true
-                auto-gateway: true
-                auto-routes: true
-              ipv6:
-                enabled: false
-              link-aggregation:
-                mode: 802.3ad
-                options:
-                  miimon: "140"
-                port:
-                  - eno1
-                  - eno2
-        rootDeviceHints:
-          deviceName: "/dev/nvme4n1"
-      - name: worker0
-        role: worker
-        bmc:
-          address: idrac-virtualmedia://192.168.1.27/redfish/v1/Systems/System.Embedded.1
-          username: root
-          password: "{{ worker_idrac_password }}"
-          disableCertificateVerification: True
-        bootMACAddress: b4:45:06:f1:11:37
-        networkConfig:
-          interfaces:
-            - name: bond0
-              type: bond
-              state: up
-              mac-address: b4:45:06:f2:a4:91
-              ipv4:
-                enabled: true
-                dhcp: true
-                auto-dns: true
-                auto-gateway: true
-                auto-routes: true
-              ipv6:
-                enabled: false
-              link-aggregation:
-                mode: 802.3ad
-                options:
-                  miimon: "140"
-                port:
-                  - eno1
-                  - eno2
-        rootDeviceHints:
-          deviceName: "/dev/nvme4n1"
+  none: {}
 pullSecret: >-
   {{ pull_secret }}
 sshKey: "{{ ssh_pub_key }}"

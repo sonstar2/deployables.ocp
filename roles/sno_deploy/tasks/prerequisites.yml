@@ -20,6 +20,7 @@
     - python3-devel
     - jq
     - ipmitool
+    - /usr/bin/nmstatectl
   become: true
 
 - name: Ensure the Ansible user has correct permissions for libvirt
@@ -70,22 +71,56 @@
     mode: u=rwX,g=rwX,o=-
     setype: httpd_sys_content_t
 
-- name: Ensure install-config.yaml exists
+- name: Ensure install-config.yaml exists (ipi)
   ansible.builtin.copy:
-    content: "{{ lookup('template', 'install-config.yaml') }}"
+    content: "{{ lookup('template', 'install-config-ipi.yaml') }}"
     dest: /home/ansible/clusterconfigs/install-config.yaml
     owner: ansible
     group: ansible
     mode: u=rwX,g=rwX,o=-
   become: false
+  when: install_method == "ipi"
+
+- name: Ensure install-config.yaml exists (agent)
+  ansible.builtin.copy:
+    content: "{{ lookup('template', 'install-config-agent.yaml') }}"
+    dest: /home/ansible/clusterconfigs/install-config.yaml
+    owner: ansible
+    group: ansible
+    mode: u=rwX,g=rwX,o=-
+  become: false
+  when: install_method == "agent"
+
+- name: Ensure agent-config.yaml exists (agent)
+  ansible.builtin.copy:
+    content: "{{ lookup('template', 'agent-config.yaml') }}"
+    dest: /home/ansible/clusterconfigs/agent-config.yaml
+    owner: ansible
+    group: ansible
+    mode: u=rwX,g=rwX,o=-
+  become: false
+  when: install_method == "agent"
 
 - name: Message
   ansible.builtin.debug:
     msg: |
       Please review the contents of the install-config.yaml before proceeding.
       You will also need to manually start the RHCOS image cache server
-      
-      podman run -d --name rhcos_image_cache \ 
+      'podman run -d --name rhcos_image_cache \ 
       -v /home/ansible/rhcos_image_cache:/var/www/html \
       -p 8080:8080/tcp \
-      registry.access.redhat.com/ubi9/httpd-24:latest
+      registry.access.redhat.com/ubi9/httpd-24:latest'
+      Then run the installation command
+      'openshift-baremetal-install create cluster --dir /home/ansible/clusterconfigs/ --log-level debug'
+  when: install_method == "ipi"
+
+- name: Message
+  ansible.builtin.debug:
+    msg: |
+      Please review the contents of the install-config.yaml and agent-config.yaml
+      before proceeding.
+      'openshift-install --dir /home/ansible/clusterconfigs/ agent create image'
+      Use the iDRAC virtual media to mount the ISO and boot from the ISO
+      Montior the installation with:
+      'openshift-install --dir /home/ansible/clusterconfigs/ agent wait-for bootstrap-complete --log-level debug'
+  when: install_method == "agent"
