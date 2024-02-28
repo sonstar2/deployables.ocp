@@ -1,15 +1,15 @@
 apiVersion: v1
-baseDomain: uotest01.poc.lab.local
+baseDomain: {{ unid }}.{{ base_domain }}
 compute:
   - architecture: amd64 
     hyperthreading: Enabled
     name: worker
-    replicas: 1
+    replicas: 0
 controlPlane:
   architecture: amd64
   hyperthreading: Enabled
   name: master
-  replicas: 1
+  replicas: 3
   platform:
     baremetal: {}
 metadata:
@@ -38,7 +38,7 @@ platform:
         bmc:
           address: idrac-virtualmedia://192.168.1.28/redfish/v1/Systems/System.Embedded.1
           username: root
-          password: "{{ sno_idrac_password }}"
+          password: "{{ master0_idrac_password }}"
           disableCertificateVerification: True
         bootMACAddress: b4:45:06:f1:0d:d1
         networkConfig:
@@ -64,20 +64,51 @@ platform:
                   - eno2
         rootDeviceHints:
           deviceName: "/dev/nvme4n1"
-      - name: worker0
-        role: worker
+      - name: master1
+        role: master
         bmc:
-          address: idrac-virtualmedia://192.168.1.27/redfish/v1/Systems/System.Embedded.1
+          address: idrac-virtualmedia://192.168.1.28/redfish/v1/Systems/System.Embedded.1
           username: root
-          password: "{{ worker_idrac_password }}"
+          password: "{{ master0_idrac_password }}"
           disableCertificateVerification: True
-        bootMACAddress: b4:45:06:f1:11:37
+        bootMACAddress: b4:45:06:f1:0d:d1
         networkConfig:
           interfaces:
             - name: bond0
               type: bond
               state: up
-              mac-address: b4:45:06:f1:11:37
+              mac-address: b4:45:06:f1:0d:d1
+              ipv4:
+                enabled: true
+                dhcp: true
+                auto-dns: true
+                auto-gateway: true
+                auto-routes: true
+              ipv6:
+                enabled: false
+              link-aggregation:
+                mode: 802.3ad
+                options:
+                  miimon: "140"
+                port:
+                  - eno1
+                  - eno2
+        rootDeviceHints:
+          deviceName: "/dev/nvme4n1"
+      - name: master2
+        role: master
+        bmc:
+          address: idrac-virtualmedia://192.168.1.28/redfish/v1/Systems/System.Embedded.1
+          username: root
+          password: "{{ master0_idrac_password }}"
+          disableCertificateVerification: True
+        bootMACAddress: b4:45:06:f1:0d:d1
+        networkConfig:
+          interfaces:
+            - name: bond0
+              type: bond
+              state: up
+              mac-address: b4:45:06:f1:0d:d1
               ipv4:
                 enabled: true
                 dhcp: true
@@ -96,7 +127,7 @@ platform:
         rootDeviceHints:
           deviceName: "/dev/nvme4n1"
 pullSecret: >-
-  {{ pull_secret }}
+  {{ _pull_secret | to_json }}
 sshKey: "{{ ssh_pub_key }}"
 imageContentSources:
   - mirrors:
@@ -123,6 +154,9 @@ imageContentSources:
   - mirrors:
     - "{{ inventory_hostname }}:8443/rh-sso-7"
     source: registry.redhat.io/rh-sso-7
+  - mirrors:
+    - "{{ inventory_hostname }}:8443/redhat"
+    source: registry.redhat.io/redhat
   - mirrors:
     - "{{ inventory_hostname }}:8443/container-native-virtualization"
     source: registry.redhat.io/container-native-virtualization

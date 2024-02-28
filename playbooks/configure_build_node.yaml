@@ -39,7 +39,6 @@
         state: present
       loop:
         - tmux
-        - /usr/bin/nmstatectl
 
     - name: Install OpenShift Prerequisites (Pulls from Internet)
       ansible.builtin.uri:
@@ -93,6 +92,7 @@
         group: root
         mode: u=rx,g=rx,o=rx
       become: true
+      when: install_method == "ipi"
 
     - name: Configure pull-secret
       ansible.builtin.copy:

@@ -24,7 +24,7 @@ networking:
 platform:
   none: {}
 pullSecret: >-
-  {{ pull_secret }}
+  {{ _pull_secret | to_json }}
 sshKey: "{{ ssh_pub_key }}"
 imageContentSources:
   - mirrors:
@@ -54,6 +54,9 @@ imageContentSources:
   - mirrors:
     - "{{ inventory_hostname }}:8443/container-native-virtualization"
     source: registry.redhat.io/container-native-virtualization
+  - mirrors:
+    - "{{ inventory_hostname }}:8443/redhat"
+    source: registry.redhat.io/redhat
   - mirrors:
     - "{{ inventory_hostname }}:8443/openshift/release"
     source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
