@@ -5,6 +5,7 @@ Documentation for the collection.
 ## Setup
 Ensure you have the following Ansible collections downloaded to your working directory:
   - ansible-posix-1.5.4.tar.gz
+  - ansible-utils-3.1.0.tar.gz
   - community-general-8.3.0.tar.gz
   - redhat-satellite_operations-2.1.0.tar.gz
   - redhat-satellite-4.0.0.tar.gz

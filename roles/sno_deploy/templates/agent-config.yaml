@@ -2,7 +2,7 @@ apiVersion: v1alpha1
 kind: AgentConfig
 metadata:
   name: k8s
-rendezvousIP: 192.168.1.254
+rendezvousIP: "192.168.1.254"
 hosts: 
   - hostname: master0
     role: master

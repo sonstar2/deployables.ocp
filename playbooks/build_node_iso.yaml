@@ -3,4 +3,4 @@
   connection: local
   gather_facts: false
   roles:
-    - role: create_build_iso
+    - role: create_build_node_iso

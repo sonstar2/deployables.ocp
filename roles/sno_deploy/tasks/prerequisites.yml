@@ -71,25 +71,58 @@
     mode: u=rwX,g=rwX,o=-
     setype: httpd_sys_content_t
 
-- name: Ensure install-config.yaml exists (ipi)
-  ansible.builtin.copy:
-    content: "{{ lookup('template', 'install-config-ipi.yaml') }}"
-    dest: /home/ansible/clusterconfigs/install-config.yaml
-    owner: ansible
-    group: ansible
-    mode: u=rwX,g=rwX,o=-
-  become: false
+- name: Ensure RHCOS image is available (Pulls from Internet)
+  ansible.builtin.shell:
+    cmd: |
+      export RHCOS_QEMU_URI=$(/usr/local/bin/openshift-baremetal-install coreos print-stream-json | jq -r --arg ARCH "$(arch)" '.architectures[$ARCH].artifacts.qemu.formats["qcow2.gz"].disk.location')
+      export RHCOS_QEMU_UNCOMPRESSED_SHA256=$(/usr/local/bin/openshift-baremetal-install coreos print-stream-json | jq -r --arg ARCH "$(arch)" '.architectures[$ARCH].artifacts.qemu.formats["qcow2.gz"].disk["uncompressed-sha256"]')
+      curl -L ${RHCOS_QEMU_URI} -o /home/ansible/rhcos_image_cache/rhcos.qcow2.gz
+    creates: /home/ansible/rhcos_image_cache/rhcos.qcow2.gz
+
+- name: Get mirror registry CA certificate
+  ansible.builtin.shell:
+    cmd: |
+      openssl s_client -showcerts -verify 1 \
+      -connect {{ inventory_hostname }}:8443 < /dev/null 2> /dev/null \
+      | awk '/BEGIN CERTIFICATE/&&++k==2,/END CERTIFICATE/'
+  register: mirror_registry_certificate
+
+- name: Get install-config-ipi template
+  ansible.builtin.set_fact:
+    _install_config: "{{ lookup('template', 'install-config-ipi.yaml') | from_yaml }}"
   when: install_method == "ipi"
 
-- name: Ensure install-config.yaml exists (agent)
+- name: Get install-config-agent template
+  ansible.builtin.set_fact:
+    _install_config: "{{ lookup('template', 'install-config-agent.yaml') | from_yaml }}"
+  when: install_method == "agent"
+
+- name: debug
+  ansible.builtin.debug:
+    var: _install_config
+
+- name: Define additionalTrustBundle fact
+  ansible.builtin.set_fact:
+    _append_dict:
+      additionalTrustBundle: |
+        {{ mirror_registry_certificate.stdout }}
+
+- name: Modify install-config template to include additionalTrustBundle
+  ansible.builtin.set_fact:
+      _install_config: "{{ _install_config | combine(_append_dict )}}"
+
+- name: debug
+  ansible.builtin.debug:
+    msg: "{{ _install_config | from_yaml }}"
+
+- name: Ensure install-config.yaml exists
   ansible.builtin.copy:
-    content: "{{ lookup('template', 'install-config-agent.yaml') }}"
+    content: "{{ _install_config | to_yaml }}"
     dest: /home/ansible/clusterconfigs/install-config.yaml
     owner: ansible
     group: ansible
     mode: u=rwX,g=rwX,o=-
   become: false
-  when: install_method == "agent"
 
 - name: Ensure agent-config.yaml exists (agent)
   ansible.builtin.copy:
@@ -106,7 +139,7 @@
     msg: |
       Please review the contents of the install-config.yaml before proceeding.
       You will also need to manually start the RHCOS image cache server
-      'podman run -d --name rhcos_image_cache \ 
+      'podman run -d --name rhcos_image_cache \
       -v /home/ansible/rhcos_image_cache:/var/www/html \
       -p 8080:8080/tcp \
       registry.access.redhat.com/ubi9/httpd-24:latest'

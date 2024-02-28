@@ -8,6 +8,33 @@
     state: directory
   become: true
 
+- name: Configure mirror registry root directory
+  ansible.builtin.file:
+    path: /home/ansible/mirror_registry/quay-root
+    mode: u=rwX,g=rwX,o=-
+    owner: root
+    group: root
+    state: directory
+  become: true
+
+- name: Configure mirror registry storage directory
+  ansible.builtin.file:
+    path: /home/ansible/mirror_registry/quay-storage
+    mode: u=rwX,g=rwX,o=-
+    owner: root
+    group: root
+    state: directory
+  become: true
+
+- name: Configure mirror registry storage directory
+  ansible.builtin.file:
+    path: /home/ansible/mirror_registry/pg-storage
+    mode: u=rwX,g=rwX,o=-
+    owner: root
+    group: root
+    state: directory
+  become: true
+
 - name: Copy over image archive for initial import
   ansible.builtin.copy:
     src: archive/mirror_seq1_000000.tar
@@ -22,30 +49,69 @@
     cmd: |
       /usr/local/bin/mirror-registry install \
       --quayHostname {{ inventory_hostname }} \
-      --quayRoot /home/ansible/mirror_registry \
+      --quayRoot /home/ansible/mirror_registry/quay-root \
       --initUser init \
-      --initPassword "{{ mirror_registry_init_password }}"
+      --initPassword "{{ mirror_registry_init_password }}" \
+      --pgStorage /home/ansible/mirror_registry/pg-storage \
+      --quayStorage /home/ansible/mirror_registry/quay-storage \
       --sslCheckSkip \
       --no-color
-    creates: /home/ansible/mirror_registry/quay-rootCA
+    creates: /home/ansible/mirror_registry/quay-root/quay-rootCA
+  failed_when:
+    - "'Quay installed successfully' not in deploy_mirror_registry.stdout"
+    - deploy_mirror_registry.rc != 0
   become: true
+  register: deploy_mirror_registry
+  tags:
+    - mirror-deploy
 
 - name: Configure local registry
   ansible.builtin.copy:
     content: |
       [[registry]]
       prefix = "registry.redhat.io"
-      location = "witness-node.uotest01.poc.lab.local:8443"
+      location = "{{ inventory_hostname }}:8443"
+      insecure = true
 
       [[registry]]
       prefix = "registry.access.redhat.com"
-      location = "witness-node.uotest01.poc.lab.local:8443"
+      location = "{{ inventory_hostname }}:8443"
+      insecure = true
+
+      [[registry]]
+      location = "{{ inventory_hostname }}:8443"
+      insecure = true
     dest: /etc/containers/registries.conf.d/010-mirror-registry.conf
     owner: root
     group: root
     mode: u=rwX,g=rX,o=rX
 
-- name: Push oc-mirror content to the mirror registry
+- name: Configure container signature enforcement
+  ansible.builtin.copy:
+    content: |
+      {
+          "default": [
+              {
+                  "type": "insecureAcceptAnything"
+              }
+          ],
+          "transports": {
+              "docker": {},
+              "docker-daemon": {
+                  "": [
+                      {
+                          "type": "insecureAcceptAnything"
+                      }
+                  ]
+              }
+          }
+      }
+    dest: /etc/containers/policy.json
+    owner: root
+    group: root
+    mode: u=rwX,g=rX,o=rX
+
+- name: Push oc-mirror content to the mirror registry (this may take 30+ minutes)
   ansible.builtin.shell:
     cmd: >-
       /usr/bin/podman login https://{{ inventory_hostname }}:8443 

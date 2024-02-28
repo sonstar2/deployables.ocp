@@ -32,7 +32,12 @@
 - name: Ensure the ISO has the kickstart file injected
   ansible.builtin.shell:
     cmd: |
-      mkksiso /var/tmp/build/ks.cfg /var/tmp/build/rhel-9.3-x86_64-dvd.iso /var/tmp/build/witness-node.iso
+      mkksiso -c 'inst.ks=hd:LABEL=RHEL-9-3-0-BaseOS-x86_64/ks.cfg' \
+      -c 'console=tty0' \
+      -c 'console=ttyS0,115200' \
+      --ks /var/tmp/build/ks.cfg \
+      /var/tmp/build/rhel-9.3-x86_64-dvd.iso \
+      /var/tmp/build/witness-node.iso
     creates: /var/tmp/build/witness-node.iso
   become: false
 

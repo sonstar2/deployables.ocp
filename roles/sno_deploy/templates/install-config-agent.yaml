@@ -26,62 +26,37 @@ platform:
 pullSecret: >-
   {{ pull_secret }}
 sshKey: "{{ ssh_pub_key }}"
-additionalTrustBundle: |
-  -----BEGIN CERTIFICATE-----
-  MIIEETCCAvmgAwIBAgIUNqe4AsNI35a+6xSMSWj9Sf36pF0wDQYJKoZIhvcNAQEL
-  BQAwfTELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAlZBMREwDwYDVQQHDAhOZXcgWW9y
-  azENMAsGA1UECgwEUXVheTERMA8GA1UECwwIRGl2aXNpb24xLDAqBgNVBAMMI3dp
-  dG5lc3Mtbm9kZS51b3Rlc3QwMS5wb2MubGFiLmxvY2FsMB4XDTI0MDIyMjIwMTIz
-  N1oXDTI2MTIxMjIwMTIzN1owfTELMAkGA1UEBhMCVVMxCzAJBgNVBAgMAlZBMREw
-  DwYDVQQHDAhOZXcgWW9yazENMAsGA1UECgwEUXVheTERMA8GA1UECwwIRGl2aXNp
-  b24xLDAqBgNVBAMMI3dpdG5lc3Mtbm9kZS51b3Rlc3QwMS5wb2MubGFiLmxvY2Fs
-  MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuIY3eamPksTwfBP93myT
-  ZN1CRAOW/xHHk8SENp0+/mUo2xGXUv86A8qs2wJLjwHBEuJO1GmZiQX8J1kaxwt/
-  ftnhkbkRn/m0vQ56sAQ/IFaVADFlj6SWmbaK2ZXsEbiQBtVVhkKw8B8k8vjA81Cc
-  RS0hKQlmc0uAdVFiEYNGT4FSGlCRKHNL/sULbW/HDfHSgnrGcQwB3prNY4xBF6wa
-  8XNT9yrMCDPxdRVtXIUHRM6wg0Nfkn7x4+M/BOOzwFPBPCDWe/mXS/jxmEZ/Qk3o
-  rWEJ0yf+8qd8GhXvQ3VR7m8hEm3thW0zpxaZSspMCEFfaMiqBGmRV0K6dbyNNQUS
-  rQIDAQABo4GIMIGFMAsGA1UdDwQEAwIC5DATBgNVHSUEDDAKBggrBgEFBQcDATAu
-  BgNVHREEJzAlgiN3aXRuZXNzLW5vZGUudW90ZXN0MDEucG9jLmxhYi5sb2NhbDAS
-  BgNVHRMBAf8ECDAGAQH/AgEBMB0GA1UdDgQWBBRWZuoIshvuQPmPw29rQu3BvV9u
-  eDANBgkqhkiG9w0BAQsFAAOCAQEAksO3eR0FM2vGxUrCY3y2a6TdNfZ1XrZBivfv
-  KV6Ci9+5H4NRZN/cBcGFHlK9zQMgJ5ooy3hfSZSdRoqCjB797XrckBGxjElRpm1C
-  8yIlhb45bgxtAPosZ3d7MAwteslgVy4SFoQ5kjWig7i1a+whRz2fUwDLrL/6ArW2
-  FBshCSEzg/5prHLWCuN+6efPO50nXTLZV9Wa8bwL+4WunAH7B3DVSaPCT13kXRre
-  KfqndOK+EqxApgPi7YvPs5xZhwOW17fVOzWqLRt1XDuwlv4KQvYPy7oS7sg81czq
-  u3hNrMujkcrF83jg5Jst1VaRWG/oBWimDwOnxsguo1D+nBPDbw==
-  -----END CERTIFICATE-----
 imageContentSources:
   - mirrors:
-    - witness-node.uotest01.poc.lab.local:8443/ubi9
+    - "{{ inventory_hostname }}:8443/ubi9"
     source: registry.redhat.io/ubi9
   - mirrors:
-    - witness-node.uotest01.poc.lab.local:8443/ubi8
+    - "{{ inventory_hostname }}:8443/ubi8"
     source: registry.access.redhat.com/ubi8
   - mirrors:
-    - witness-node.uotest01.poc.lab.local:8443/openshift4
+    - "{{ inventory_hostname }}:8443/openshift4"
     source: registry.redhat.io/openshift4
   - mirrors:
-    - witness-node.uotest01.poc.lab.local:8443/odf4
+    - "{{ inventory_hostname }}:8443/odf4"
     source: registry.redhat.io/odf4
   - mirrors:
-    - witness-node.uotest01.poc.lab.local:8443/openshift-gitops-1
+    - "{{ inventory_hostname }}:8443/openshift-gitops-1"
     source: registry.redhat.io/openshift-gitops-1
   - mirrors:
-    - witness-node.uotest01.poc.lab.local:8443/rhel8
+    - "{{ inventory_hostname }}:8443/rhel8"
     source: registry.redhat.io/rhel8
   - mirrors:
-    - witness-node.uotest01.poc.lab.local:8443/rhceph
+    - "{{ inventory_hostname }}:8443/rhceph"
     source: registry.redhat.io/rhceph
   - mirrors:
-    - witness-node.uotest01.poc.lab.local:8443/rh-sso-7
+    - "{{ inventory_hostname }}:8443/rh-sso-7"
     source: registry.redhat.io/rh-sso-7
   - mirrors:
-    - witness-node.uotest01.poc.lab.local:8443/container-native-virtualization
+    - "{{ inventory_hostname }}:8443/container-native-virtualization"
     source: registry.redhat.io/container-native-virtualization
   - mirrors:
-    - witness-node.uotest01.poc.lab.local:8443/openshift/release
+    - "{{ inventory_hostname }}:8443/openshift/release"
     source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
   - mirrors:
-    - witness-node.uotest01.poc.lab.local:8443/openshift/release-images
+    - "{{ inventory_hostname }}:8443/openshift/release-images"
     source: quay.io/openshift-release-dev/ocp-release

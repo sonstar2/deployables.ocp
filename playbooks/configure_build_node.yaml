@@ -41,7 +41,7 @@
         - tmux
         - /usr/bin/nmstatectl
 
-    - name: Install OpenShift Prerequisites
+    - name: Install OpenShift Prerequisites (Pulls from Internet)
       ansible.builtin.uri:
         url: "{{ item.url }}"
         owner: root
