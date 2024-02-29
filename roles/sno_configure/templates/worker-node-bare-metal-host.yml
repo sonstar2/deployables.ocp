@@ -1,0 +1,20 @@
+---
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  name: "worker0"
+  namespace: openshift-machine-api
+spec:
+  bmc:
+    address: idrac-virtualmedia://192.168.1.28/redfish/v1/Systems/System.Embedded.1
+    credentialsName: worker-bmc-creds
+    disableCertificateVerification: true
+  bootMACAddress: b4:45:06:f1:0d:d1
+  firmware:
+    simultaneousMultithreadingEnabled: true
+    sriovEnabled: true
+    virtualizationEnabled: true
+  online: true
+  preprovisioningNetworkDataName: worker-network-config
+  rootDeviceHints:
+    deviceName: /dev/nvme4n1

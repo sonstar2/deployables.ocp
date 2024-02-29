@@ -7,7 +7,7 @@ storageConfig:
 mirror:
   platform:
     channels:
-    - name: stable-4.14                                             
+    - name: stable-4.14
       type: ocp
     graph: true
   operators:
@@ -25,11 +25,18 @@ mirror:
         - name: local-storage-operator
           channels:
             - name: stable
+        - name: lvms-operator
+          channels:
+            - name: stable-4.14
         - name: odf-operator
           channels:
             - name: stable-4.14
+        - name: cincinnati-operator
+          channels:
+            - name: v1
   additionalImages:
     - name: registry.redhat.io/ubi9/ubi:latest
     - name: registry.access.redhat.com/ubi9/httpd-24:latest
+    - name: registry.redhat.io/rhel8/support-tools:latest
   #- name: server2012 vm image
   helm: {}

@@ -1,0 +1,30 @@
+---
+- name: Configure OpenShift Cluster
+  hosts: witness
+  gather_facts: false
+  become: false
+  pre_tasks:
+    - name: Ensure dependencies are installed
+      ansible.builtin.pip:
+        name: kubernetes
+        state: present
+
+    - name: Retrieve kubeadmin password
+      ansible.builtin.slurp:
+        src: /home/ansible/clusterconfigs/auth/kubeadmin-password
+      register: _kubeadmin_password
+
+    - name: Set API URL
+      ansible.builtin.set_fact:
+        api_url: "https://api.k8s.{{ unid }}.{{ base_domain }}:6443"
+
+    - name: Retrieve authentication token
+      community.okd.openshift_auth:
+        username: "kubeadmin"
+        password: "{{ _kubeadmin_password.content | b64decode }}"
+        host: "{{ api_url }}"
+        validate_certs: false
+      register: openshift_auth_results
+
+  roles:
+    - role: sno_configure

@@ -1,0 +1,35 @@
+---
+- name: configure argocd namespace
+  kubernetes.core.k8s:
+    src: "namespace.yml"
+  failed_when: false
+
+- name: configure argocd operatorgroup
+  kubernetes.core.k8s:
+    src: "operatorgroup.yml"
+
+- name: wait for ArgoCD to start deploying
+  ansible.builtin.pause:
+    echo: no
+    prompt: "Waiting for ArgoCD to start deploying"
+    seconds: 20
+
+- name: configure argocd subscription
+  kubernetes.core.k8s:
+    src: "subscription.yml"
+  register: deploy_argocd
+  until: "deploy_argocd.result.status.state == 'AtLatestKnown'"
+  retries: 10
+  delay: 10
+
+- name: configure argocd cluster role binding
+  kubernetes.core.k8s:
+    src: "clusterrolebinding.yml"
+
+- name: configure argocd repo
+  kubernetes.core.k8s:
+    template: "repo.yml"
+
+- name: configure argocd initial application
+  kubernetes.core.k8s:
+    template: "application.yml"

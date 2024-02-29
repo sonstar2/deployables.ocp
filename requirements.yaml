@@ -7,6 +7,10 @@ collections:
     type: file
   - source: community-libvirt-1.3.0.tar.gz
     type: file
+  - source: community-okd-3.0.1.tar.gz
+    type: file
+  - source: kubernetes-core-3.0.0.tar.gz
+    type: file
   - source: redhat-satellite_operations-2.1.0.tar.gz
     type: file
   - source: redhat-satellite-4.0.0.tar.gz

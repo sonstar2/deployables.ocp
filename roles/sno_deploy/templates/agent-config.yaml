@@ -3,7 +3,7 @@ kind: AgentConfig
 metadata:
   name: k8s
 rendezvousIP: "192.168.1.254"
-hosts: 
+hosts:
   - hostname: master0
     role: master
     interfaces:
@@ -17,36 +17,6 @@ hosts:
           type: bond
           state: up
           mac-address: b4:45:06:f1:0d:d1
-          ipv4:
-            enabled: true
-            dhcp: true
-            auto-dns: true
-            auto-gateway: true
-            auto-routes: true
-          ipv6:
-            enabled: false
-          link-aggregation:
-            mode: 802.3ad
-            options:
-              miimon: "140"
-            port:
-              - eno1
-              - eno2
-    rootDeviceHints:
-      deviceName: "/dev/nvme4n1"
-  - hostname: worker0
-    role: worker
-    interfaces:
-      - name: en1
-        macAddress: b4:45:06:f2:a4:91
-      - name: en2
-        macAddress: b4:45:06:f1:11:38
-    networkConfig:
-      interfaces:
-        - name: bond0
-          type: bond
-          state: up
-          mac-address: b4:45:06:f2:a4:91
           ipv4:
             enabled: true
             dhcp: true

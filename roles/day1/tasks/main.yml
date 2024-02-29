@@ -1,0 +1,5 @@
+---
+# tasks file for day1
+- name: Deploy Red Hat OpenShift GitOps
+  ansible.builtin.import_tasks:
+    file: argocd.yml
