@@ -1,0 +1,38 @@
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: redhat-operators-mirrored
+  namespace: openshift-marketplace
+spec:
+  displayName: Red Hat Operators - Mirrored
+  grpcPodConfig:
+    nodeSelector:
+      kubernetes.io/os: linux
+      node-role.kubernetes.io/master: ''
+    priorityClassName: system-cluster-critical
+    securityContextConfig: restricted
+    tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+        operator: Exists
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 120
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
+        operator: Exists
+        tolerationSeconds: 120
+  icon:
+    base64data: ''
+    mediatype: ''
+  image: '{{ inventory_hostname }}:8443/redhat/redhat-operator-index:v4.14'
+  priority: -100
+  publisher: oc-mirror
+  sourceType: grpc
+  secrets:
+    - pull-secret
+  updateStrategy:
+    registryPoll:
+      interval: 10m

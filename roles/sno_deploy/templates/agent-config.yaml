@@ -1,22 +1,22 @@
 apiVersion: v1alpha1
 kind: AgentConfig
 metadata:
-  name: k8s
-rendezvousIP: "192.168.1.254"
+  name: {{ hostvars[item]['cluster_name'] }}
+rendezvousIP: "{{ hostvars[item]['rendezvous_ip'] }}"
 hosts:
   - hostname: master0
     role: master
     interfaces:
-      - name: en1
-        macAddress: b4:45:06:f1:0d:d1
-      - name: en2
-        macAddress:  b4:45:06:f1:0d:d2
+{% for interface in hostvars[item]['interfaces'] %}
+      - name: {{ interface.name }}
+        macAddress: {{ interface.mac_address }}
+{% endfor %}
     networkConfig:
       interfaces:
         - name: bond0
           type: bond
           state: up
-          mac-address: b4:45:06:f1:0d:d1
+          mac-address: {{ hostvars[item]['interfaces'][0]['mac_address'] }}
           ipv4:
             enabled: true
             dhcp: true

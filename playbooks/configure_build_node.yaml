@@ -96,7 +96,7 @@
 
     - name: Configure pull-secret
       ansible.builtin.copy:
-        content: "{{ pull_secret }}"
+        content: "{\"auths\": {\"{{ inventory_hostname }}:8443\": {\"auth\": \"{{('init:' + mirror_registry_init_password) | b64encode }}\", \"email\": \"\"}}}"
         dest: /etc/containers/auth.json
         owner: ansible
         group: ansible

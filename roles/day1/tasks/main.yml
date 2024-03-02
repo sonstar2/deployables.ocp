@@ -1,5 +1,46 @@
 ---
 # tasks file for day1
+- name: Set pull-secret fact
+  ansible.builtin.set_fact:
+    _pull_secret: "{\"auths\": {\"{{ inventory_hostname }}:8443\": {\"auth\": \"{{('init:' + mirror_registry_init_password) | b64encode }}\", \"email\": \"\"}}}"
+
+- name: Create pull-secret in openshift-marketplace
+  kubernetes.core.k8s:
+    host: "{{ hostvars[item]['_api_url'] }}"
+    api_key: "{{ openshift_auth_results['results'][cluster_index]['openshift_auth']['api_key'] }}"
+    validate_certs: false
+    resource_definition:
+      kind: Secret
+      apiVersion: v1
+      metadata:
+        name: pull-secret
+        namespace: openshift-marketplace
+      data:
+        .dockerconfigjson: "{{ _pull_secret | to_json | b64encode }}"
+      type: kubernetes.io/dockerconfigjson
+
+- name: Configure operator hub
+  kubernetes.core.k8s:
+    host: "{{ hostvars[item]['_api_url'] }}"
+    api_key: "{{ openshift_auth_results['results'][cluster_index]['openshift_auth']['api_key'] }}"
+    validate_certs: false
+    resource_definition: "{{ lookup('template', 'operator_hub.yml') | from_yaml }}"
+  failed_when: false
+
+- name: Configure operator catalog
+  kubernetes.core.k8s:
+    host: "{{ hostvars[item]['_api_url'] }}"
+    api_key: "{{ openshift_auth_results['results'][cluster_index]['openshift_auth']['api_key'] }}"
+    validate_certs: false
+    resource_definition: "{{ lookup('template', 'operator_catalog.yml') | from_yaml }}"
+  failed_when: false
+
+- name: wait for 1 minute for the catalog to come up
+  ansible.builtin.pause:
+    echo: no
+    prompt: "Waiting for operator catalog"
+    seconds: 60
+
 - name: Deploy Red Hat OpenShift GitOps
   ansible.builtin.import_tasks:
     file: argocd.yml

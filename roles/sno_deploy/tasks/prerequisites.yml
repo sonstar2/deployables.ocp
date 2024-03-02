@@ -1,12 +1,13 @@
 ---
 - name: Ensure cluster configuration directory exists
   ansible.builtin.file:
-    path: /home/ansible/clusterconfigs
+    path: "/home/ansible/{{ hostvars[item]['cluster_name'] }}"
     owner: ansible
     group: ansible
     mode: u=rwX,g=rwX,o=-
     state: directory
   become: false
+  loop: "{{ groups['clusters'] }}"
 
 # https://docs.openshift.com/container-platform/4.14/installing/installing_bare_metal_ipi/ipi-install-installation-workflow.html
 - name: Ensure all required packages are installed
@@ -104,35 +105,46 @@
   ansible.builtin.set_fact:
     _install_config: "{{ lookup('template', 'install-config-agent.yaml') | from_yaml }}"
   when: install_method == "agent"
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop: "{{ groups['clusters'] }}"
 
 - name: Define additionalTrustBundle fact
   ansible.builtin.set_fact:
     _append_dict:
       additionalTrustBundle: |
         {{ mirror_registry_certificate.stdout }}
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop: "{{ groups['clusters'] }}"
 
 - name: Modify install-config template to include additionalTrustBundle
   ansible.builtin.set_fact:
-      _install_config: "{{ _install_config | combine(_append_dict )}}"
+      _install_config: "{{ hostvars[item]['_install_config'] | combine(hostvars[item]['_append_dict']) }}"
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop: "{{ groups['clusters'] }}"
 
 - name: Ensure install-config.yaml exists
   ansible.builtin.copy:
-    content: "{{ _install_config | to_yaml }}"
-    dest: /home/ansible/clusterconfigs/install-config.yaml
+    content: "{{ hostvars[item]['_install_config'] | to_nice_yaml }}"
+    dest: "/home/ansible/{{ hostvars[item]['cluster_name'] }}/install-config.yaml"
     owner: ansible
     group: ansible
     mode: u=rwX,g=rwX,o=-
   become: false
+  loop: "{{ groups['clusters'] }}"
 
 - name: Ensure agent-config.yaml exists (agent)
   ansible.builtin.copy:
     content: "{{ lookup('template', 'agent-config.yaml') }}"
-    dest: /home/ansible/clusterconfigs/agent-config.yaml
+    dest: "/home/ansible/{{ hostvars[item]['cluster_name'] }}/agent-config.yaml"
     owner: ansible
     group: ansible
     mode: u=rwX,g=rwX,o=-
   become: false
   when: install_method == "agent"
+  loop: "{{ groups['clusters'] }}"
 
 - name: Message
   ansible.builtin.debug:
@@ -144,7 +156,7 @@
       -p 8080:8080/tcp \
       registry.access.redhat.com/ubi9/httpd-24:latest'
       Then run the installation command
-      'openshift-baremetal-install create cluster --dir /home/ansible/clusterconfigs/ --log-level debug'
+      'openshift-baremetal-install create cluster --dir /home/ansible/<cluster-name>/ --log-level debug'
   when: install_method == "ipi"
 
 - name: Message
@@ -152,8 +164,8 @@
     msg: |
       Please review the contents of the install-config.yaml and agent-config.yaml
       before proceeding.
-      'openshift-install --dir /home/ansible/clusterconfigs/ agent create image'
+      'openshift-install --dir /home/ansible/<cluster-name>/ agent create image'
       Use the iDRAC virtual media to mount the ISO and boot from the ISO
       Montior the installation with:
-      'openshift-install --dir /home/ansible/clusterconfigs/ agent wait-for bootstrap-complete --log-level debug'
+      'openshift-install --dir /home/ansible/<cluster-name>/ agent wait-for bootstrap-complete --log-level debug'
   when: install_method == "agent"

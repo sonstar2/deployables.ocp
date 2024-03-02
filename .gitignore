@@ -1,5 +1,7 @@
 inventory.yaml
 *.tar.gz
+*.wheel
+*.whl
 archive/
 .oc-mirror.log
 openshift-baremetal-install

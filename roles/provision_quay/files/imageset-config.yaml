@@ -34,6 +34,12 @@ mirror:
         - name: cincinnati-operator
           channels:
             - name: v1
+        - name: devspaces
+          channels:
+            - name: stable
+        - name: openshift-pipelines-operator-rh
+          channels:
+            - name: latest
   additionalImages:
     - name: registry.redhat.io/ubi9/ubi:latest
     - name: registry.access.redhat.com/ubi9/httpd-24:latest

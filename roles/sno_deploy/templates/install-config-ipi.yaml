@@ -143,6 +143,9 @@ imageContentSources:
     - "{{ inventory_hostname }}:8443/odf4"
     source: registry.redhat.io/odf4
   - mirrors:
+    - "{{ inventory_hostname }}:8443/lvms4"
+    source: registry.redhat.io/lvms4
+  - mirrors:
     - "{{ inventory_hostname }}:8443/openshift-gitops-1"
     source: registry.redhat.io/openshift-gitops-1
   - mirrors:
@@ -155,11 +158,32 @@ imageContentSources:
     - "{{ inventory_hostname }}:8443/rh-sso-7"
     source: registry.redhat.io/rh-sso-7
   - mirrors:
-    - "{{ inventory_hostname }}:8443/redhat"
-    source: registry.redhat.io/redhat
-  - mirrors:
     - "{{ inventory_hostname }}:8443/container-native-virtualization"
     source: registry.redhat.io/container-native-virtualization
+  - mirrors:
+    - "{{ inventory_hostname }}:8443/devspaces"
+    source: registry.redhat.io/devspaces
+  - mirrors:
+    - "{{ inventory_hostname }}:8443/source-to-image"
+    source: registry.redhat.io/source-to-image
+  - mirrors:
+    - "{{ inventory_hostname }}:8443/devworkspace"
+    source: registry.redhat.io/devworkspace
+  - mirrors:
+    - "{{ inventory_hostname }}:8443/openshift-pipelines"
+    source: registry.redhat.io/openshift-pipelines
+  - mirrors:
+    - "{{ inventory_hostname }}:8443/openshift-serverless-1"
+    source: registry.redhat.io/openshift-serverless-1
+  - mirrors:
+    -  "{{ inventory_hostname }}:8443/rhscl"
+    source: registry.redhat.io/rhscl
+  - mirrors:
+    - "{{ inventory_hostname }}:8443/ubi8-minimal"
+    source: registry.redhat.io/ubi8-minimal
+  - mirrors:
+    - "{{ inventory_hostname }}:8443/redhat"
+    source: registry.redhat.io/redhat
   - mirrors:
     - "{{ inventory_hostname }}:8443/openshift/release"
     source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
