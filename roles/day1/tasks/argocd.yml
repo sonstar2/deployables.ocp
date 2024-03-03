@@ -14,26 +14,18 @@
     validate_certs: false
     resource_definition: "{{ lookup('file', 'operatorgroup.yml') | from_yaml }}"
 
-- name: wait for ArgoCD to start deploying
-  ansible.builtin.pause:
-    echo: no
-    prompt: "Waiting for ArgoCD to start deploying"
-    seconds: 20
-
 - name: configure argocd subscription
   kubernetes.core.k8s:
     host: "{{ hostvars[item]['_api_url'] }}"
     api_key: "{{ openshift_auth_results['results'][cluster_index]['openshift_auth']['api_key'] }}"
     validate_certs: false
     resource_definition: "{{ lookup('file', 'subscription.yml') | from_yaml }}"
-  register: deploy_argocd
-  until: "deploy_argocd.result.status.state == 'AtLatestKnown'"
-  retries: 10
-  delay: 10
 
-- name: Debug
-  ansible.builtin.debug:
-    msg: "{{ deploy_argocd }}"
+- name: wait for ArgoCD to start deploying
+  ansible.builtin.pause:
+    echo: no
+    prompt: "Waiting for ArgoCD to start deploying"
+    seconds: 30
 
 - name: configure argocd cluster role binding
   kubernetes.core.k8s:

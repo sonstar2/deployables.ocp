@@ -1,0 +1,6 @@
+apiVersion: config.openshift.io/v1
+kind: ClusterVersion
+metadata:
+  name: version
+spec:
+  upstream: "http://update-service.apps.{{ hostvars[item]['cluster_name'] }}.{{ unid }}.{{ base_domain }}/api/upgrades_info/v1/graph"

@@ -76,6 +76,12 @@ imageContentSources:
     -  "{{ inventory_hostname }}:8443/rhscl"
     source: registry.redhat.io/rhscl
   - mirrors:
+    -  "{{ inventory_hostname }}:8443/openshift-update-service"
+    source: registry.redhat.io/openshift-update-service
+  - mirrors:
+      - "{{ inventory_hostname }}:8443/openshift/graph-image"
+    source: registry.redhat.io/openshift/graph-image
+  - mirrors:
     - "{{ inventory_hostname }}:8443/ubi8-minimal"
     source: registry.redhat.io/ubi8-minimal
   - mirrors:
