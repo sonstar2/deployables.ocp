@@ -145,27 +145,3 @@
   become: false
   when: install_method == "agent"
   loop: "{{ groups['clusters'] }}"
-
-- name: Message
-  ansible.builtin.debug:
-    msg: |
-      Please review the contents of the install-config.yaml before proceeding.
-      You will also need to manually start the RHCOS image cache server
-      'podman run -d --name rhcos_image_cache \
-      -v /home/ansible/rhcos_image_cache:/var/www/html \
-      -p 8080:8080/tcp \
-      registry.access.redhat.com/ubi9/httpd-24:latest'
-      Then run the installation command
-      'openshift-baremetal-install create cluster --dir /home/ansible/<cluster-name>/ --log-level debug'
-  when: install_method == "ipi"
-
-- name: Message
-  ansible.builtin.debug:
-    msg: |
-      Please review the contents of the install-config.yaml and agent-config.yaml
-      before proceeding.
-      'openshift-install --dir /home/ansible/<cluster-name>/ agent create image'
-      Use the iDRAC virtual media to mount the ISO and boot from the ISO
-      Montior the installation with:
-      'openshift-install --dir /home/ansible/<cluster-name>/ agent wait-for bootstrap-complete --log-level debug'
-  when: install_method == "agent"
