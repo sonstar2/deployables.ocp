@@ -27,7 +27,7 @@ spec:
   icon:
     base64data: ''
     mediatype: ''
-  image: '{{ inventory_hostname }}:8443/redhat/redhat-operator-index:v4.14'
+  image: '{{ groups['witness'][0] }}:8443/redhat/redhat-operator-index:v4.14'
   priority: -100
   publisher: oc-mirror
   sourceType: grpc

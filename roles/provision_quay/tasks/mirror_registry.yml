@@ -48,7 +48,7 @@
   ansible.builtin.shell:
     cmd: |
       /usr/local/bin/mirror-registry install \
-      --quayHostname {{ inventory_hostname }} \
+      --quayHostname {{ groups['witness'][0] }} \
       --quayRoot /home/ansible/mirror_registry/quay-root \
       --initUser init \
       --initPassword "{{ mirror_registry_init_password }}" \
@@ -70,16 +70,16 @@
     content: |
       [[registry]]
       prefix = "registry.redhat.io"
-      location = "{{ inventory_hostname }}:8443"
+      location = "{{ groups['witness'][0] }}:8443"
       insecure = true
 
       [[registry]]
       prefix = "registry.access.redhat.com"
-      location = "{{ inventory_hostname }}:8443"
+      location = "{{ groups['witness'][0] }}:8443"
       insecure = true
 
       [[registry]]
-      location = "{{ inventory_hostname }}:8443"
+      location = "{{ groups['witness'][0] }}:8443"
       insecure = true
     dest: /etc/containers/registries.conf.d/010-mirror-registry.conf
     owner: root
@@ -114,14 +114,14 @@
 - name: Push oc-mirror content to the mirror registry (this may take 30+ minutes)
   ansible.builtin.shell:
     cmd: >-
-      /usr/bin/podman login https://{{ inventory_hostname }}:8443
+      /usr/bin/podman login https://{{ groups['witness'][0] }}:8443
       --tls-verify=false
       --username init
       --password "{{ mirror_registry_init_password }}" &&
       /usr/local/bin/oc-mirror
       --dest-skip-tls
       --from=/home/ansible/mirror_seq1_000000.tar
-      docker://{{ inventory_hostname }}:8443
+      docker://{{ groups['witness'][0] }}:8443
     creates: /home/ansible/oc-mirror-workspace/publish/.metadata.json
   become: false
   tags:

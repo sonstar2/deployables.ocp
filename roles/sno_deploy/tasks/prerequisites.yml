@@ -87,13 +87,13 @@
   ansible.builtin.shell:
     cmd: |
       openssl s_client -showcerts -verify 1 \
-      -connect {{ inventory_hostname }}:8443 < /dev/null 2> /dev/null \
+      -connect {{ groups['witness'][0] }}:8443 < /dev/null 2> /dev/null \
       | awk '/BEGIN CERTIFICATE/&&++k==2,/END CERTIFICATE/'
   register: mirror_registry_certificate
 
 - name: Create pull-secret
   ansible.builtin.set_fact:
-    _pull_secret: "{\"auths\": {\"{{ inventory_hostname }}:8443\": {\"auth\": \"{{('init:' + mirror_registry_init_password) | b64encode }}\", \"email\": \"\"}}}"
+    _pull_secret: "{\"auths\": {\"{{ groups['witness'][0] }}:8443\": {\"auth\": \"{{('init:' + mirror_registry_init_password) | b64encode }}\", \"email\": \"\"}}}"
   no_log: true
 
 - name: Get install-config-ipi template

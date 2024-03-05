@@ -1,7 +1,7 @@
 apiVersion: v1
 baseDomain: {{ unid }}.{{ base_domain }}
 compute:
-  - architecture: amd64 
+  - architecture: amd64
     hyperthreading: Enabled
     name: worker
     replicas: 0
@@ -18,7 +18,7 @@ networking:
       hostPrefix: 23
   machineNetwork:
     - cidr: {{ machine_network }}
-  networkType: OVNKubernetes 
+  networkType: OVNKubernetes
   serviceNetwork:
     - 172.30.0.0/16
 platform:
@@ -28,69 +28,69 @@ pullSecret: >-
 sshKey: "{{ ssh_pub_key }}"
 imageContentSources:
   - mirrors:
-    - "{{ inventory_hostname }}:8443/ubi9"
+    - "{{ groups['witness'][0] }}:8443/ubi9"
     source: registry.redhat.io/ubi9
   - mirrors:
-    - "{{ inventory_hostname }}:8443/ubi8"
+    - "{{ groups['witness'][0] }}:8443/ubi8"
     source: registry.access.redhat.com/ubi8
   - mirrors:
-    - "{{ inventory_hostname }}:8443/openshift4"
+    - "{{ groups['witness'][0] }}:8443/openshift4"
     source: registry.redhat.io/openshift4
   - mirrors:
-    - "{{ inventory_hostname }}:8443/odf4"
+    - "{{ groups['witness'][0] }}:8443/odf4"
     source: registry.redhat.io/odf4
   - mirrors:
-    - "{{ inventory_hostname }}:8443/lvms4"
+    - "{{ groups['witness'][0] }}:8443/lvms4"
     source: registry.redhat.io/lvms4
   - mirrors:
-    - "{{ inventory_hostname }}:8443/openshift-gitops-1"
+    - "{{ groups['witness'][0] }}:8443/openshift-gitops-1"
     source: registry.redhat.io/openshift-gitops-1
   - mirrors:
-    - "{{ inventory_hostname }}:8443/rhel8"
+    - "{{ groups['witness'][0] }}:8443/rhel8"
     source: registry.redhat.io/rhel8
   - mirrors:
-    - "{{ inventory_hostname }}:8443/rhceph"
+    - "{{ groups['witness'][0] }}:8443/rhceph"
     source: registry.redhat.io/rhceph
   - mirrors:
-    - "{{ inventory_hostname }}:8443/rh-sso-7"
+    - "{{ groups['witness'][0] }}:8443/rh-sso-7"
     source: registry.redhat.io/rh-sso-7
   - mirrors:
-    - "{{ inventory_hostname }}:8443/container-native-virtualization"
+    - "{{ groups['witness'][0] }}:8443/container-native-virtualization"
     source: registry.redhat.io/container-native-virtualization
   - mirrors:
-    - "{{ inventory_hostname }}:8443/devspaces"
+    - "{{ groups['witness'][0] }}:8443/devspaces"
     source: registry.redhat.io/devspaces
   - mirrors:
-    - "{{ inventory_hostname }}:8443/source-to-image"
+    - "{{ groups['witness'][0] }}:8443/source-to-image"
     source: registry.redhat.io/source-to-image
   - mirrors:
-    - "{{ inventory_hostname }}:8443/devworkspace"
+    - "{{ groups['witness'][0] }}:8443/devworkspace"
     source: registry.redhat.io/devworkspace
   - mirrors:
-    - "{{ inventory_hostname }}:8443/openshift-pipelines"
+    - "{{ groups['witness'][0] }}:8443/openshift-pipelines"
     source: registry.redhat.io/openshift-pipelines
   - mirrors:
-    - "{{ inventory_hostname }}:8443/openshift-serverless-1"
+    - "{{ groups['witness'][0] }}:8443/openshift-serverless-1"
     source: registry.redhat.io/openshift-serverless-1
   - mirrors:
-    -  "{{ inventory_hostname }}:8443/rhscl"
+    -  "{{ groups['witness'][0] }}:8443/rhscl"
     source: registry.redhat.io/rhscl
   - mirrors:
-    -  "{{ inventory_hostname }}:8443/openshift-update-service"
+    -  "{{ groups['witness'][0] }}:8443/openshift-update-service"
     source: registry.redhat.io/openshift-update-service
   - mirrors:
-      - "{{ inventory_hostname }}:8443/openshift/graph-image"
+      - "{{ groups['witness'][0] }}:8443/openshift/graph-image"
     source: registry.redhat.io/openshift/graph-image
   - mirrors:
-    - "{{ inventory_hostname }}:8443/ubi8-minimal"
+    - "{{ groups['witness'][0] }}:8443/ubi8-minimal"
     source: registry.redhat.io/ubi8-minimal
   - mirrors:
-    - "{{ inventory_hostname }}:8443/redhat"
+    - "{{ groups['witness'][0] }}:8443/redhat"
     source: registry.redhat.io/redhat
   - mirrors:
-    - "{{ inventory_hostname }}:8443/openshift/release"
+    - "{{ groups['witness'][0] }}:8443/openshift/release"
     source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
   - mirrors:
-    - "{{ inventory_hostname }}:8443/openshift/release-images"
+    - "{{ groups['witness'][0] }}:8443/openshift/release-images"
     source: quay.io/openshift-release-dev/ocp-release
 
