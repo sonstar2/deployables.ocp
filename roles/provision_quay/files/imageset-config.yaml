@@ -44,5 +44,8 @@ mirror:
     - name: registry.redhat.io/ubi9/ubi:latest
     - name: registry.access.redhat.com/ubi9/httpd-24:latest
     - name: registry.redhat.io/rhel8/support-tools:latest
-  #- name: server2012 vm image
+    - name: registry.redhat.io/rhel8/rhel-guest-image:latest
+    - name: registry.redhat.io/rhel9/rhel-guest-image:latest
+    - name: mcr.microsoft.com/mssql/rhel/server:2022-preview-rhel-9
+    - name: docker.io/gitlab/gitlab-ce:latest
   helm: {}
