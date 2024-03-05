@@ -2,12 +2,12 @@
 # tasks file for day1
 - name: Set pull-secret fact
   ansible.builtin.set_fact:
-    _pull_secret: "{\"auths\": {\"{{ inventory_hostname }}:8443\": {\"auth\": \"{{('init:' + mirror_registry_init_password) | b64encode }}\", \"email\": \"\"}}}"
+    _pull_secret: "{\"auths\": {\"{{ groups['witness'][0] }}:8443\": {\"auth\": \"{{('init:' + mirror_registry_init_password) | b64encode }}\", \"email\": \"\"}}}"
 
 - name: Create pull-secret in openshift-marketplace
   kubernetes.core.k8s:
-    host: "{{ hostvars[item]['_api_url'] }}"
-    api_key: "{{ openshift_auth_results['results'][cluster_index]['openshift_auth']['api_key'] }}"
+    host: "{{ _api_url }}"
+    api_key: "{{ openshift_auth_results['openshift_auth']['api_key'] }}"
     validate_certs: false
     resource_definition:
       kind: Secret
@@ -23,8 +23,8 @@
 
 - name: Configure operator hub
   kubernetes.core.k8s:
-    host: "{{ hostvars[item]['_api_url'] }}"
-    api_key: "{{ openshift_auth_results['results'][cluster_index]['openshift_auth']['api_key'] }}"
+    host: "{{ _api_url }}"
+    api_key: "{{ openshift_auth_results['openshift_auth']['api_key'] }}"
     validate_certs: false
     resource_definition: "{{ lookup('template', 'operator_hub.yml') | from_yaml }}"
   failed_when: false
@@ -33,8 +33,8 @@
 
 - name: Configure operator catalog
   kubernetes.core.k8s:
-    host: "{{ hostvars[item]['_api_url'] }}"
-    api_key: "{{ openshift_auth_results['results'][cluster_index]['openshift_auth']['api_key'] }}"
+    host: "{{ _api_url }}"
+    api_key: "{{ openshift_auth_results['openshift_auth']['api_key'] }}"
     validate_certs: false
     resource_definition: "{{ lookup('template', 'operator_catalog.yml') | from_yaml }}"
   failed_when: false
@@ -43,8 +43,8 @@
 
 - name: Configure OpenShift Update Service Namespace
   kubernetes.core.k8s:
-    host: "{{ hostvars[item]['_api_url'] }}"
-    api_key: "{{ openshift_auth_results['results'][cluster_index]['openshift_auth']['api_key'] }}"
+    host: "{{ _api_url }}"
+    api_key: "{{ openshift_auth_results['openshift_auth']['api_key'] }}"
     validate_certs: false
     resource_definition:
       kind: Project
@@ -60,7 +60,7 @@
   ansible.builtin.shell:
     cmd: |
       openssl s_client -showcerts -verify 1 \
-      -connect {{ inventory_hostname }}:8443 < /dev/null 2> /dev/null \
+      -connect {{ groups['witness'][0] }}:8443 < /dev/null 2> /dev/null \
       | awk '/BEGIN CERTIFICATE/&&++k==2,/END CERTIFICATE/'
   register: mirror_registry_certificate
   delegate_to: "{{ groups['witness'][0] }}"
@@ -79,8 +79,8 @@
 
 - name: Configure Registry CA cert for OpenShift Update Service
   kubernetes.core.k8s:
-    host: "{{ hostvars[item]['_api_url'] }}"
-    api_key: "{{ openshift_auth_results['results'][cluster_index]['openshift_auth']['api_key'] }}"
+    host: "{{ _api_url }}"
+    api_key: "{{ openshift_auth_results['openshift_auth']['api_key'] }}"
     validate_certs: false
     resource_definition:
       "{{ _mirror_registry_ca_configmap }}"
@@ -98,8 +98,8 @@
 
 - name: Configure Registry CA cert
   kubernetes.core.k8s:
-    host: "{{ hostvars[item]['_api_url'] }}"
-    api_key: "{{ openshift_auth_results['results'][cluster_index]['openshift_auth']['api_key'] }}"
+    host: "{{ _api_url }}"
+    api_key: "{{ openshift_auth_results['openshift_auth']['api_key'] }}"
     validate_certs: false
     resource_definition:
       "{{ _mirror_registry_ca_configmap }}"
@@ -108,8 +108,8 @@
 
 - name: Configure Update Service route
   kubernetes.core.k8s:
-    host: "{{ hostvars[item]['_api_url'] }}"
-    api_key: "{{ openshift_auth_results['results'][cluster_index]['openshift_auth']['api_key'] }}"
+    host: "{{ _api_url }}"
+    api_key: "{{ openshift_auth_results['openshift_auth']['api_key'] }}"
     validate_certs: false
     resource_definition:
       "{{ lookup('template', 'cluster_version.yml.j2') }}"

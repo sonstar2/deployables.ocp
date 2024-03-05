@@ -22,7 +22,7 @@
 
     - name: Set kubeadmin password
       ansible.builtin.set_fact:
-        _kubeadmin_password: "{{ _kubeadmin_password_list['results'][index]['content'] | b64decode }}"
+        _kubeadmin_password: "{{ _kubeadmin_password_list['content'] | b64decode }}"
 
     - name: Set API URL
       ansible.builtin.set_fact:
