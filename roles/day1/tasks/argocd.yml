@@ -6,6 +6,8 @@
     validate_certs: false
     resource_definition: "{{ lookup('file', 'namespace.yml') | from_yaml }}"
   failed_when: false
+  delegate_to: "{{ groups['witness'][0] }}"
+  delegate_facts: false
 
 - name: configure argocd operatorgroup
   kubernetes.core.k8s:
@@ -13,6 +15,8 @@
     api_key: "{{ openshift_auth_results['results'][cluster_index]['openshift_auth']['api_key'] }}"
     validate_certs: false
     resource_definition: "{{ lookup('file', 'operatorgroup.yml') | from_yaml }}"
+  delegate_to: "{{ groups['witness'][0] }}"
+  delegate_facts: false
 
 - name: configure argocd subscription
   kubernetes.core.k8s:
@@ -20,6 +24,8 @@
     api_key: "{{ openshift_auth_results['results'][cluster_index]['openshift_auth']['api_key'] }}"
     validate_certs: false
     resource_definition: "{{ lookup('file', 'subscription.yml') | from_yaml }}"
+  delegate_to: "{{ groups['witness'][0] }}"
+  delegate_facts: false
 
 - name: wait for ArgoCD to start deploying
   ansible.builtin.pause:
@@ -33,6 +39,8 @@
     api_key: "{{ openshift_auth_results['results'][cluster_index]['openshift_auth']['api_key'] }}"
     validate_certs: false
     resource_definition: "{{ lookup('file', 'clusterrolebinding.yml') | from_yaml }}"
+  delegate_to: "{{ groups['witness'][0] }}"
+  delegate_facts: false
 
 - name: configure argocd repo
   kubernetes.core.k8s:
@@ -40,6 +48,8 @@
     api_key: "{{ openshift_auth_results['results'][cluster_index]['openshift_auth']['api_key'] }}"
     validate_certs: false
     resource_definition: "{{ lookup('file', 'repo.yml') | from_yaml }}"
+  delegate_to: "{{ groups['witness'][0] }}"
+  delegate_facts: false
 
 - name: configure argocd initial application
   kubernetes.core.k8s:
@@ -47,3 +57,5 @@
     api_key: "{{ openshift_auth_results['results'][cluster_index]['openshift_auth']['api_key'] }}"
     validate_certs: false
     resource_definition: "{{ lookup('file', 'application.yml') | from_yaml }}"
+  delegate_to: "{{ groups['witness'][0] }}"
+  delegate_facts: false

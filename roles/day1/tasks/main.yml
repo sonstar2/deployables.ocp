@@ -18,6 +18,8 @@
       data:
         .dockerconfigjson: "{{ _pull_secret | to_json | b64encode }}"
       type: kubernetes.io/dockerconfigjson
+  delegate_to: "{{ groups['witness'][0] }}"
+  delegate_facts: false
 
 - name: Configure operator hub
   kubernetes.core.k8s:
@@ -26,6 +28,8 @@
     validate_certs: false
     resource_definition: "{{ lookup('template', 'operator_hub.yml') | from_yaml }}"
   failed_when: false
+  delegate_to: "{{ groups['witness'][0] }}"
+  delegate_facts: false
 
 - name: Configure operator catalog
   kubernetes.core.k8s:
@@ -34,6 +38,8 @@
     validate_certs: false
     resource_definition: "{{ lookup('template', 'operator_catalog.yml') | from_yaml }}"
   failed_when: false
+  delegate_to: "{{ groups['witness'][0] }}"
+  delegate_facts: false
 
 - name: Configure OpenShift Update Service Namespace
   kubernetes.core.k8s:
@@ -47,6 +53,8 @@
         name: openshift-update-service
         labels:
           kubernetes.io/metadata.name: openshift-update-service
+  delegate_to: "{{ groups['witness'][0] }}"
+  delegate_facts: false
 
 - name: Get mirror registry CA certificate
   ansible.builtin.shell:
@@ -55,6 +63,8 @@
       -connect {{ inventory_hostname }}:8443 < /dev/null 2> /dev/null \
       | awk '/BEGIN CERTIFICATE/&&++k==2,/END CERTIFICATE/'
   register: mirror_registry_certificate
+  delegate_to: "{{ groups['witness'][0] }}"
+  delegate_facts: false
 
 - name: Set mirror registry CA cert fact
   ansible.builtin.set_fact:
@@ -74,6 +84,8 @@
     validate_certs: false
     resource_definition:
       "{{ _mirror_registry_ca_configmap }}"
+  delegate_to: "{{ groups['witness'][0] }}"
+  delegate_facts: false
 
 - name: Set openshift-config mirror registry CA cert fact
   ansible.builtin.set_fact:
@@ -91,6 +103,8 @@
     validate_certs: false
     resource_definition:
       "{{ _mirror_registry_ca_configmap }}"
+  delegate_to: "{{ groups['witness'][0] }}"
+  delegate_facts: false
 
 - name: Configure Update Service route
   kubernetes.core.k8s:
@@ -99,6 +113,8 @@
     validate_certs: false
     resource_definition:
       "{{ lookup('template', 'cluster_version.yml.j2') }}"
+  delegate_to: "{{ groups['witness'][0] }}"
+  delegate_facts: false
 
 - name: wait for 1 minute for the catalog to come up
   ansible.builtin.pause:

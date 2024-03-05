@@ -1,49 +1,44 @@
 ---
 - name: Configure OpenShift Cluster
-  hosts: witness
+  hosts: clusters
   gather_facts: false
   become: false
+  serial: 1
   pre_tasks:
-    - name: Ensure dependencies are installed
+    - name: Ensure dependencies are installed # noqa: run-once[task]
       ansible.builtin.pip:
         name: kubernetes
         state: present
+      delegate_to: "{{ groups['witness'][0] }}"
+      delegate_facts: true
+      run_once: true
 
     - name: Retrieve kubeadmin password
       ansible.builtin.slurp:
-        src: /home/ansible/{{ hostvars[item]['cluster_name'] }}/auth/kubeadmin-password
+        src: /home/ansible/{{ cluster_name }}/auth/kubeadmin-password
       register: _kubeadmin_password_list
-      loop: "{{ groups['clusters'] }}"
+      delegate_to: "{{ groups['witness'][0] }}"
+      delegate_facts: false
 
     - name: Set kubeadmin password
       ansible.builtin.set_fact:
         _kubeadmin_password: "{{ _kubeadmin_password_list['results'][index]['content'] | b64decode }}"
-      loop: "{{ groups['clusters'] }}"
-      loop_control:
-        index_var: index
-      delegate_to: "{{ item }}"
-      delegate_facts: true
 
     - name: Set API URL
       ansible.builtin.set_fact:
-        _api_url: "https://api.{{ hostvars[item]['cluster_name'] }}.{{ unid }}.{{ base_domain }}:6443"
-      loop: "{{ groups['clusters'] }}"
-      delegate_to: "{{ item }}"
-      delegate_facts: true
+        _api_url: "https://api.{{ cluster_name }}.{{ unid }}.{{ base_domain }}:6443"
 
     - name: Retrieve authentication token
       community.okd.openshift_auth:
         username: "kubeadmin"
-        password: "{{ hostvars[item]['_kubeadmin_password'] }}"
-        host: "{{ hostvars[item]['_api_url'] }}"
+        password: "{{ _kubeadmin_password }}"
+        host: "{{ _api_url }}"
         validate_certs: false
       register: openshift_auth_results
-      loop: "{{ groups['clusters'] }}"
+      delegate_to: "{{ groups['witness'][0] }}"
+      delegate_facts: false
 
   tasks:
     - name: Run day 1 operations
       ansible.builtin.include_role:
         name: day1
-      loop: "{{ groups['clusters'] }}"
-      loop_control:
-        index_var: cluster_index
