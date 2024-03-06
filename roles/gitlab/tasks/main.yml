@@ -102,7 +102,7 @@
 - name: Get initial GitLab credentials
   ansible.builtin.shell:
     cmd: |
-      podman exec -it gitlab-app cat /etc/gitlab/initial_root_password | grep "Password:" | tr -s ' ' ' ' | cut -d ':' -f2
+      podman exec -it gitlab-app cat /etc/gitlab/initial_root_password | grep "Password:" | tr -d ' ' | cut -d ':' -f2
   register: gitlab_credentials_result
 
 - name: debug
