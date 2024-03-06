@@ -52,7 +52,7 @@
       - 2222:2222
     generate_systemd:
       name: true
-      new: true
+      new: false
       path: /etc/systemd/system/
       restart_policy: always
     state: started
@@ -67,7 +67,7 @@
     pod: gitlab-pod
     generate_systemd:
       name: true
-      new: true
+      new: false
       path: /etc/systemd/system/
       restart_policy: always
     state: started
@@ -76,4 +76,36 @@
       - /home/ansible/gitlab/logs:/var/log/gitlab:Z
       - /home/ansible/gitlab/data:/var/opt/gitlab:Z
   become: true
+
+- name: Ensure GitLab pod and container services are enabled and started
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+    daemon_reload: true
+  loop:
+    - container-gitlab-app.service
+    - pod-gitlab-pod.service
+
+- name: Wait until HTTP status is 200
+  ansible.builtin.uri:
+    url: "http://{{ inventory_hostname }}:8444/users/sign_in"
+    return_content: yes
+    validate_certs: no
+    status_code:
+      - 200
+  register: gitlab_curl
+  until: gitlab_curl.status == 200
+  retries: 60
+  delay: 10
+
+- name: Get initial GitLab credentials
+  ansible.builtin.shell:
+    cmd: |
+      podman exec -it gitlab-app cat /etc/gitlab/initial_root_password | grep "Password:" | tr -s ' ' ' ' | cut -d ':' -f2
+  register: gitlab_credentials_result
+
+- name: debug
+  ansible.builtin.debug:
+    var: gitlab_credentials_result.stdout
 
