@@ -40,6 +40,10 @@
       loop:
         - tmux
 
+    - name: Deploy and configure GitLab
+      ansible.builtin.import_role:
+        name: gitlab
+
     - name: Install OpenShift Prerequisites (Pulls from Internet)
       ansible.builtin.uri:
         url: "{{ item.url }}"
