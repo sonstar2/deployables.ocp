@@ -1,0 +1,71 @@
+{# configure global settings #}
+set system host-name {{ host_name }}
+{% for name_server in system_name_servers %}
+set system name-server {{ name_server }}
+{% endfor %}
+{# set chassis auto-image-upgrade #}
+
+set protocols l2-learning global-mac-table-aging-time 120
+set protocols lldp interface all
+set protocols lldp-med interface all
+set protocols igmp-snooping vlan default
+
+delete vlans
+
+{# configure vlans #}
+{% for subnet in subnets %}
+set vlans {{ subnet.vlan.tag }} vlan-id {{ subnet.vlan.id }}
+{% endfor %}
+
+{#
+    Configure aggregated ethernet interfaces to connect to SRX cluster.
+    The number of aggregated devices inlcudes both uplink and host devices.
+#}
+set chassis aggregated-devices ethernet device-count 16
+
+delete interfaces
+
+set interfaces ge0/0/0 unit 0 family ethernet-switching interface-mode trunk
+set interfaces ge0/0/0 vlan-tagging
+set interfaces ge0/0/0 native-vlan-id 1
+{% for subnet in subnets %}
+set interfaces ge0/0/0 unit 0 family ethernet-switching vlan members {{ subnet.vlan.tag }}
+{% endfor %}
+set protocols rstp interface ge0/0/0
+{% endfor %}
+
+
+{# configure LAN interfaces #}
+{% for interface in lan_interfaces %}
+set interfaces {{ interface.name }} gratuitous-arp-reply
+{% if interface.rstp | default(false) %}
+set protocols rstp interface {{ interface.name }}
+{% endif %}
+{% if 'ae' in interface.name %}
+set interfaces {{ interface.name }} aggregated-ether-options lacp {{ interface.lacp_mode | default('active') }}
+set interfaces {{ interface.name }} aggregated-ether-options lacp periodic {{ interface.lacp_mon | default('slow') }}
+{% for member in interface.members %}
+set interfaces {{ member }} ether-options 802.3ad {{ interface.name }}
+{% endfor %}
+{% endif %}
+{% if interface.vlans is defined %}
+{% if interface.vlan_mode == "trunk" %}
+set interfaces {{ interface.name }} vlan-tagging
+set interfaces {{ interface.name }} unit 0 family ethernet-switching interface-mode trunk
+{% if interface.native_vlan_id is defined %}
+set interfaces {{ interface.name }} native-vlan-id {{ interface.native_vlan_id }}
+{% endif %}
+{% endif %}
+{% if interface.vlan_mode == "access" %}
+set interfaces {{ interface.name }} unit 0 family ethernet-switching interface-mode access
+{% endif %}
+{% for vlan in interface.vlans %}
+{% for subnet in subnets %}
+{% if vlan == subnet.vlan.id %}
+set interfaces {{ interface.name }} unit 0 family ethernet-switching vlan members {{ subnet.vlan.tag }}
+{% endif %}
+{% endfor %}
+{% endfor %}
+{% endif %}
+
+{% endfor %}

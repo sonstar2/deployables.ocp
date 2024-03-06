@@ -47,5 +47,7 @@ mirror:
     - name: registry.redhat.io/rhel8/rhel-guest-image:latest
     - name: registry.redhat.io/rhel9/rhel-guest-image:latest
     - name: mcr.microsoft.com/mssql/rhel/server:2022-preview-rhel-9
+    - name: quay.io/openshift-cnv/containerdisks:SERVER_EVAL_x64FRE_en-us
+    - name: registry.redhat.io/container-native-virtualization/virtio-win-rhel
     - name: docker.io/gitlab/gitlab-ce:latest
   helm: {}
