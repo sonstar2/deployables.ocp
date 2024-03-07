@@ -37,15 +37,6 @@
     state: enabled
   become: true
 
-- name: Ensure firewalld allows 8080/tcp service
-  ansible.posix.firewalld:
-    immediate: true
-    permanent: true
-    port: 8080/tcp
-    state: enabled
-  become: true
-  when: install_method == "ipi"
-
 - name: Ensure libvirt storage pool is defined
   community.libvirt.virt_pool:
     name: default
@@ -64,25 +55,6 @@
   ansible.builtin.import_role:
     name: redhat.rhel_system_roles.network
 
-- name: Ensure RHCOS image cache directory is available
-  ansible.builtin.file:
-    path: /home/ansible/rhcos_image_cache
-    state: directory
-    owner: ansible
-    group: ansible
-    mode: u=rwX,g=rwX,o=-
-    setype: httpd_sys_content_t
-  when: install_method == "ipi"
-
-- name: Ensure RHCOS image is available (Pulls from Internet)
-  ansible.builtin.shell:
-    cmd: |
-      export RHCOS_QEMU_URI=$(/usr/local/bin/openshift-baremetal-install coreos print-stream-json | jq -r --arg ARCH "$(arch)" '.architectures[$ARCH].artifacts.qemu.formats["qcow2.gz"].disk.location')
-      export RHCOS_QEMU_UNCOMPRESSED_SHA256=$(/usr/local/bin/openshift-baremetal-install coreos print-stream-json | jq -r --arg ARCH "$(arch)" '.architectures[$ARCH].artifacts.qemu.formats["qcow2.gz"].disk["uncompressed-sha256"]')
-      curl -L ${RHCOS_QEMU_URI} -o /home/ansible/rhcos_image_cache/rhcos.qcow2.gz
-    creates: /home/ansible/rhcos_image_cache/rhcos.qcow2.gz
-  when: install_method == "ipi"
-
 - name: Get mirror registry CA certificate
   ansible.builtin.shell:
     cmd: |
@@ -96,15 +68,9 @@
     _pull_secret: "{\"auths\": {\"{{ groups['witness'][0] }}:8443\": {\"auth\": \"{{('init:' + mirror_registry_init_password) | b64encode }}\", \"email\": \"\"}}}"
   no_log: true
 
-- name: Get install-config-ipi template
-  ansible.builtin.set_fact:
-    _install_config: "{{ lookup('template', 'install-config-ipi.yaml') | from_yaml }}"
-  when: install_method == "ipi"
-
 - name: Get install-config-agent template
   ansible.builtin.set_fact:
     _install_config: "{{ lookup('template', 'install-config-agent.yaml') | from_yaml }}"
-  when: install_method == "agent"
   delegate_to: "{{ item }}"
   delegate_facts: true
   loop: "{{ groups['clusters'] }}"
@@ -143,5 +109,4 @@
     group: ansible
     mode: u=rwX,g=rwX,o=-
   become: false
-  when: install_method == "agent"
   loop: "{{ groups['clusters'] }}"
