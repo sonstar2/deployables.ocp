@@ -25,13 +25,13 @@ set chassis aggregated-devices ethernet device-count 16
 
 delete interfaces
 
-set interfaces ge-0/0/0 unit 0 family ethernet-switching interface-mode trunk
-set interfaces ge-0/0/0 vlan-tagging
-set interfaces ge-0/0/0 native-vlan-id 1
+set interfaces ge-0/0/6 unit 0 family ethernet-switching interface-mode trunk
+set interfaces ge-0/0/6 vlan-tagging
+set interfaces ge-0/0/6 native-vlan-id 100
 {% for subnet in subnets %}
-set interfaces ge-0/0/0 unit 0 family ethernet-switching vlan members {{ subnet.vlan.tag }}
+set interfaces ge-0/0/6 unit 0 family ethernet-switching vlan members {{ subnet.vlan.tag }}
 {% endfor %}
-set protocols rstp interface ge-0/0/0
+set protocols rstp interface ge-0/0/6
 
 {# configure LAN interfaces #}
 {% for interface in lan_interfaces %}
