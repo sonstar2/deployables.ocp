@@ -2,43 +2,37 @@
 # tasks file for network
 - name: Ensure configs directory exists
   ansible.builtin.file:
-    path: "{{ inventory_path }}/configs"
-    ensure: directory
+    path: "{{ inventory_dir }}/configs"
+    state: directory
     mode: u=rwX,g=rwX,o=-
-    owner: ansible
-    group: ansible
-  become: false
+    owner: "{{ ansible_user_id }}"
 
 - name: Ensure backups directory exists
   ansible.builtin.file:
-    path: "{{ inventory_path }}/configs/backups"
-    ensure: directory
+    path: "{{ inventory_dir }}/configs/backups"
+    state: directory
     mode: u=rwX,g=rwX,o=-
-    owner: ansible
-    group: ansible
-  become: false
+    owner: "{{ ansible_user_id }}"
 
 - name: Ensure candidate directory exists
   ansible.builtin.file:
-    path: "{{ inventory_path }}/configs/candidate"
-    ensure: directory
+    path: "{{ inventory_dir }}/configs/candidate"
+    state: directory
     mode: u=rwX,g=rwX,o=-
-    owner: ansible
-    group: ansible
-  become: false
+    owner: "{{ ansible_user_id }}"
 
 - name: Retrieve current configuration to allow rollback
   juniper.device.config:
     retrieve: committed
-    dest_dir: "{{ inventory_path }}/configs/backups"
+    dest_dir: "{{ inventory_dir }}/configs/backups"
     format: set
 
 - name: Create config files
   ansible.builtin.template:
     src: qfx.j2
-    dest: "{{ inventory_path }}/configs/candidate/{{ inventory_hostname }}.set"
+    dest: "{{ inventory_dir }}/configs/candidate/{{ inventory_hostname }}.set"
 
 - name: Configure host
   juniper.device.config:
     load: set
-    src: "{{ inventory_path }}/configs/candidate/{{ inventory_hostname }}.set"
+    src: "{{ inventory_dir }}/configs/candidate/{{ inventory_hostname }}.set"
