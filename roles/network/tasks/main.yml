@@ -1,5 +1,20 @@
 ---
 # tasks file for network
+- name: Configure router
+  ansible.builtin.copy:
+    content: "{{ hostvars[groups['router'][0]]['router_config'] }}"
+    dest: /conf/config. xml
+  delegate_to: "{{ groups['router'][0] }}"
+  delegate_facts: false
+  register: router_configuration
+
+- name: Reboot router
+  ansible.builtin.reboot:
+    msg: "Rebooting to apply configuration"
+  delegate_to: "{{ groups['router'][0] }}"
+  delegate_facts: false
+  when: "{{ router_configuration.changed }}"
+
 - name: Ensure configs directory exists
   ansible.builtin.file:
     path: "{{ inventory_dir }}/configs"
