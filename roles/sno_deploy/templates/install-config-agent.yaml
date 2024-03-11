@@ -49,6 +49,9 @@ imageContentSources:
     - "{{ groups['witness'][0] }}:8443/rhel8"
     source: registry.redhat.io/rhel8
   - mirrors:
+    - "{{ groups['witness'][0] }}:8443/rhel9"
+    source: registry.redhat.io/rhel9
+  - mirrors:
     - "{{ groups['witness'][0] }}:8443/rhceph"
     source: registry.redhat.io/rhceph
   - mirrors:
@@ -93,4 +96,7 @@ imageContentSources:
   - mirrors:
     - "{{ groups['witness'][0] }}:8443/openshift/release-images"
     source: quay.io/openshift-release-dev/ocp-release
+  - mirrors:
+    - "{{ groups['witness'][0] }}:8443/mssql"
+    source: mcr.microsoft.com/mssql
 
