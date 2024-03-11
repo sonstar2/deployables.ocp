@@ -1,5 +1,19 @@
 # To Do
 - [ ] Document all variables
 - [ ] Relabel each variable to it has the appropriate prefix
-- [ ] Script for uploading ISO to iDRAC (use https://docs.openshift.com/container-platform/4.14/installing/installing_sno/install-sno-installing-sno.html#install-booting-from-an-iso-over-http-redfish_install-sno-installing-sno-with-the-assisted-installer as a reference)
-- [ ] Deploy GitLab and bootstrap it with the GitOps repo
+- [ ] Script for uploading ISO to iDRAC (use [this](https://docs.openshift.com/container-platform/4.14/installing/installing_sno/install-sno-installing-sno.html#install-booting-from-an-iso-over-http-redfish_install-sno-installing-sno-with-the-assisted-installer) as a reference)
+- [-] Deploy GitLab and bootstrap it with the GitOps repo
+- [ ] Deploy Keycloak
+  - [ ] Integrate with AD
+  - [ ] Integrate with each SNO
+- [ ] Deploy Windows Server 2022 VMs
+  - [ ] Create AD Domain
+- [ ] Deploy Microsoft SQL 2022 Container
+- [ ] Deploy RHEL9 VMs
+  - [ ] Deploy Splunk or another tool
+- [ ] Deploy `hub`/`core` OCP in AWS
+  - [ ] Configure AAP
+  - [ ] Configure ACM
+    - [ ] Integrate `spoke` SNOs
+    - [ ] Deploy a basic policy
+- [ ] Deploy and Configure [OADP](https://docs.openshift.com/container-platform/4.14/backup_and_restore/application_backup_and_restore/backing_up_and_restoring/backing-up-applications.html#backing-up-applications)
