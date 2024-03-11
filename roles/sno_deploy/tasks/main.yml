@@ -3,3 +3,11 @@
 - name: Configure prerequisites
   ansible.builtin.import_tasks:
     file: prerequisites.yml
+
+- name: Configure create_agent_iso script
+  ansible.builtin.copy:
+    dest: /usr/local/bin/create_agent_isos.sh
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+    src: create_agent_isos.sh
