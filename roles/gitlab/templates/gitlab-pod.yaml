@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gitlab-pod
+spec:
+  containers:
+    - name: gitlab-app
+      image: "{{ inventory_hostname }}:8443/gitlab/gitlab-ce:latest"
+      ports:
+        - containerPort: 8444
+          hostPort: 8444
+        - containerPort: 2222
+          hostPort: 2222
+      volumeMounts:
+        - mountPath: /etc/gitlab:Z
+          name: gitlab-config
+        - mountPath: /var/log/gitlab:Z
+          name: gitlab-logs
+        - mountPath: /var/opt/gitlab:Z
+          name: gitlab-data
+      env:
+        - name: GITLAB_OMNIBUS_CONFIG
+          value: "external_url 'http://{{ inventory_hostname }}:8444'; gitlab_rails['gitlab_shell_ssh_port'] = 2222; puma['port'] = 8445"
+  volumes:
+    - name: gitlab-config
+      hostPath:
+        path: /home/ansible/gitlab/config
+    - name: gitlab-logs
+      hostPath:
+        path: /home/ansible/gitlab/logs
+    - name: gitlab-data
+      hostPath:
+        path: /home/ansible/gitlab/data

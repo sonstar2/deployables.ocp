@@ -1,32 +1,5 @@
 ---
 # tasks file for gitlab
-- name: Configure firewalld
-  ansible.builtin.import_tasks:
-    file: firewalld.yml
-- name: Configure Gitlab config directory
-  ansible.builtin.file:
-    path: /home/ansible/gitlab/config
-    state: directory
-    owner: root
-    group: root
-    mode: u=rwX,g=rwX,o=-
-
-- name: Configure Gitlab logs directory
-  ansible.builtin.file:
-    path: /home/ansible/gitlab/logs
-    state: directory
-    owner: root
-    group: root
-    mode: u=rwX,g=rwX,o=-
-
-- name: Configure Gitlab data directory
-  ansible.builtin.file:
-    path: /home/ansible/gitlab/data
-    state: directory
-    owner: root
-    group: root
-    mode: u=rwX,g=rwX,o=-
-
 - name: Configure registry auth
   ansible.builtin.file:
     path: /root/.docker
@@ -44,48 +17,9 @@
     group: root
     mode: u=rwX,g=rwX,o=-
 
-- name: Configure GitLab pod
-  containers.podman.podman_pod:
-    name: gitlab-pod
-    publish:
-      - 8444:8444
-      - 2222:2222
-    generate_systemd:
-      name: true
-      new: false
-      path: /etc/systemd/system/
-      restart_policy: always
-    state: started
-  become: true
-
-- name: Configure GitLab container
-  containers.podman.podman_container:
-    name: gitlab-app
-    env:
-      GITLAB_OMNIBUS_CONFIG="external_url 'http://{{ inventory_hostname }}:8444'; gitlab_rails['gitlab_shell_ssh_port'] = 2222; puma['port'] = 8445"
-    image: "{{ inventory_hostname }}:8443/gitlab/gitlab-ce:latest"
-    pod: gitlab-pod
-    generate_systemd:
-      name: true
-      new: false
-      path: /etc/systemd/system/
-      restart_policy: always
-    state: started
-    volume:
-      - /home/ansible/gitlab/config:/etc/gitlab:Z
-      - /home/ansible/gitlab/logs:/var/log/gitlab:Z
-      - /home/ansible/gitlab/data:/var/opt/gitlab:Z
-  become: true
-
-- name: Ensure GitLab pod and container services are enabled and started
-  ansible.builtin.systemd_service:
-    name: "{{ item }}"
-    state: started
-    enabled: true
-    daemon_reload: true
-  loop:
-    - container-gitlab-app.service
-    - pod-gitlab-pod.service
+- name: Deploy GitLab
+  ansible.builtin.import_role:
+    name: redhat.rhel_system_roles.podman
 
 - name: Wait until HTTP status is 200
   ansible.builtin.uri:
