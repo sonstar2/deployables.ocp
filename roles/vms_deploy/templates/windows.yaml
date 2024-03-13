@@ -116,15 +116,15 @@ spec:
           guest: {{ vm_memory | default('8') }}Gi
         resources: {}
 {% if vm_enable_default_network %}
-        - pod: {}
-          name: default
+          - pod: {}
+            name: default
 {% endif %}
 {% if vm_networks is defined %}
 {% for interface in vm_networks %}
 {% if interface.type == "bridge" %}
-        - multus:
-            networkName: vlan{{ interface.source_vlan | string }}
-          name: nic{{ loop.index0 | string }}-{{ interface.source_vlan | string }}
+          - multus:
+              networkName: vlan{{ interface.source_vlan | string }}
+            name: nic{{ loop.index0 | string }}-{{ interface.source_vlan | string }}
 {% endif %}
 {% endfor %}
 {% endif %}
