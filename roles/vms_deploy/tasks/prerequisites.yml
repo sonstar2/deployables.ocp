@@ -7,6 +7,7 @@
     group: root
     mode: u=rwX,g=rwX,o=rX
     creates: /var/tmp/virtctl.tar.gz
+    validate_certs: false
   delegate_to: "{{ groups['witness'][0] }}"
   become: true
 
@@ -21,3 +22,39 @@
     src: /var/tmp/virtctl.tar.gz
   delegate_to: "{{ groups['witness'][0] }}"
   become: true
+
+- name: Ensure win2k22.qcow2 image is available locally
+  ansible.builtin.copy:
+    src: "{{ inventory_dir }}/{{ artifact_directory }}/win2k22.qcow2"
+    dest: /home/ansible/win2k22.qcow2
+    owner: ansible
+    group: ansible
+    mode: u=rwX,g=rwX,o=rX
+  delegate_to: "{{ groups['witness'][0] }}"
+
+- name: Change to openshift-virtualization-os-images project
+  ansible.builtin.shell: |
+    export KUBECONFIG=/home/ansible/{{ vm_cluster }}/auth/kubeconfig
+    oc project openshift-virtualization-os-images
+  register: _project
+  changed_when: "'Already on project' not in _project.stdout"
+  delegate_to: "{{ groups['witness'][0] }}"
+
+- name: Get current list of pvcs in openshift-virtualization-os-images project
+  ansible.builtin.shell: |
+    export KUBECONFIG=/home/ansible/{{ vm_cluster }}/auth/kubeconfig
+    oc get pvc -o custom-columns=NAME:metadata.name
+  register: _pvc_list
+  changed_when: false
+  delegate_to: "{{ groups['witness'][0] }}"
+
+- name: Create a new list images comparing current _images_name list and _pvc_list
+  ansible.builtin.set_fact:
+    _new_images: "{{ ['win2k22-qcow2'] | difference(_pvc_list.stdout_lines) }}"
+
+- name: Create pvc if it doesn't exists
+  ansible.builtin.shell: |
+    export KUBECONFIG=/home/ansible/{{ vm_cluster }}/auth/kubeconfig
+    virtctl image-upload dv win2k22-qcow2 --size 80Gi --image-path /home/ansible/win2k22.qcow2
+  when: "_new_images | length>0"
+  delegate_to: "{{ groups['witness'][0] }}"
