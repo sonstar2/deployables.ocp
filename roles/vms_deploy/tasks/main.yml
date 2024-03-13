@@ -1,5 +1,9 @@
 ---
 # tasks file for vms_deploy
+- name: Complete preflight checks
+  ansible.builtin.import_tasks:
+    file: prerequisites.yml
+
 - name: Retrieve kubeadmin password
   ansible.builtin.slurp:
     src: /home/ansible/{{ vm_cluster }}/auth/kubeadmin-password

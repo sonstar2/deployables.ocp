@@ -1,0 +1,23 @@
+---
+- name: Ensure virtctl is available
+  ansible.builtin.uri:
+    url: "https://hyperconverged-cluster-cli-download-openshift-cnv.apps.{{ vm_cluster }}.{{ unid }}.{{ base_domain }}/amd64/linux/virtctl.tar.gz"
+    dest: /var/tmp/
+    owner: root
+    group: root
+    mode: u=rwX,g=rwX,o=rX
+    creates: /var/tmp/virtctl.tar.gz
+  delegate_to: "{{ groups['witness'][0] }}"
+  become: true
+
+- name: Ensure virtctl is in correct location
+  ansible.builtin.unarchive:
+    creates: /usr/local/bin/virtctl
+    dest: /usr/local/bin/
+    group: root
+    mode: u=rx,g=rx,o=rx
+    owner: root
+    remote_src: true
+    src: /var/tmp/virtctl.tar.gz
+  delegate_to: "{{ groups['witness'][0] }}"
+  become: true
