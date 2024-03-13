@@ -109,9 +109,9 @@
       - type: cnv-tuning
   delegate_to: "{{ groups['witness'][0] }}"
 
-- name: Debug Windows template
+- name: Debug VM Template
   ansible.builtin.debug:
-    msg: "{{ lookup('template', 'rhel.yaml') }}"
+    msg: "{{ lookup('template', 'windows.yaml') }}"
 
 - name: Deploy virtual machine
   kubernetes.core.k8s:

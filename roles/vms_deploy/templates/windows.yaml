@@ -2,7 +2,7 @@
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-  name: {{ inventory_hostname }}
+  name: {{ vm_name }}
   namespace: {{ vm_project }}
   labels:
     app: {{ inventory_hostname }}
@@ -15,8 +15,7 @@ spec:
     - apiVersion: cdi.kubevirt.io/v1beta1
       kind: DataVolume
       metadata:
-        creationTimestamp: null
-        name: {{ inventory_hostname }}
+        name: {{ vm_name }}
       spec:
         sourceRef:
           kind: DataSource
@@ -86,6 +85,8 @@ spec:
 {% endif %}
 {% endfor %}
 {% endif %}
+          networkInterfaceMultiqueue: true
+          rng: {}
           tpm: {}
         features:
           acpi: {}
@@ -114,24 +115,28 @@ spec:
           type: pc-q35-rhel9.2.0
         memory:
           guest: {{ vm_memory | default('8') }}Gi
-        resources: {}
+        resources:
+          requests:
+            memory: {{ vm_memory | default('8') }}Gi
+        hostname: {{ inventory_hostname }}
+      networks:
 {% if vm_enable_default_network %}
-          - pod: {}
-            name: default
+        - pod: {}
+          name: default
 {% endif %}
 {% if vm_networks is defined %}
 {% for interface in vm_networks %}
 {% if interface.type == "bridge" %}
-          - multus:
-              networkName: vlan{{ interface.source_vlan | string }}
-            name: nic{{ loop.index0 | string }}-{{ interface.source_vlan | string }}
+        - multus:
+            networkName: vlan{{ interface.source_vlan | string }}
+          name: nic{{ loop.index0 | string }}-{{ interface.source_vlan | string }}
 {% endif %}
 {% endfor %}
 {% endif %}
       terminationGracePeriodSeconds: 3600
       volumes:
         - dataVolume:
-            name: {{ inventory_hostname }}
+            name: {{ vm_name }}
           name: rootdisk
         - containerDisk:
             image: 'registry.redhat.io/container-native-virtualization/virtio-win-rhel9@sha256:0c536c7aba76eb9c1e75a8f2dc2bbfa017e90314d55b242599ea41f42ba4434f'
