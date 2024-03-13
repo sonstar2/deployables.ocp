@@ -1,0 +1,138 @@
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: {{ inventory_hostname }}
+  namespace: {{ vm_project }}
+  labels:
+    app: {{ inventory_hostname }}
+    vm.kubevirt.io/template: windows2k22-server-medium
+    vm.kubevirt.io/template.namespace: openshift
+    vm.kubevirt.io/template.revision: '1'
+    vm.kubevirt.io/template.version: v0.26.0
+spec:
+  dataVolumeTemplates:
+    - apiVersion: cdi.kubevirt.io/v1beta1
+      kind: DataVolume
+      metadata:
+        creationTimestamp: null
+        name: {{ inventory_hostname }}
+      spec:
+        sourceRef:
+          kind: DataSource
+          name: win2k22
+          namespace: openshift-virtualization-os-images
+        storage:
+          resources:
+            requests:
+              storage: 80Gi
+  running: true
+  template:
+    metadata:
+      annotations:
+        vm.kubevirt.io/flavor: medium
+        vm.kubevirt.io/os: windows2k22
+        vm.kubevirt.io/workload: server
+      creationTimestamp: null
+      labels:
+        kubevirt.io/domain: {{ inventory_hostname }}
+        kubevirt.io/size: medium
+    spec:
+      architecture: amd64
+      domain:
+        clock:
+          timer:
+            hpet:
+              present: false
+            hyperv: {}
+            pit:
+              tickPolicy: delay
+            rtc:
+              tickPolicy: catchup
+          utc: {}
+        cpu:
+          cores: {{ vm_cpu | default('4') }}
+          sockets: 1
+          threads: {{ vm_cpu | default('4') }}
+        devices:
+          disks:
+            - disk:
+                bus: virtio
+              name: rootdisk
+            - cdrom:
+                bus: sata
+              name: windows-drivers-disk
+          inputs:
+            - bus: usb
+              name: tablet
+              type: tablet
+          interfaces:
+{% if vm_enable_default_network %}
+            - masquerade: {}
+              model: e1000e
+              name: default
+{% endif %}
+{% if vm_networks is defined %}
+{% for interface in vm_networks %}
+{% if interface.type == "bridge" %}
+            - bridge: {}
+              model: e1000e
+{% if interface.mac is defined %}
+              macAddress: {{ interface.mac }}
+{% else %}
+              macAddress: '{{ '52:54:00' | community.general.random_mac(seed=inventory_hostname + interface.source_vlan|string) }}'
+{% endif %}
+              name: nic{{ loop.index0 | string }}-{{ interface.source_vlan | string }}
+{% endif %}
+{% endfor %}
+{% endif %}
+          tpm: {}
+        features:
+          acpi: {}
+          apic: {}
+          hyperv:
+            reenlightenment: {}
+            ipi: {}
+            synic: {}
+            synictimer:
+              direct: {}
+            spinlocks:
+              spinlocks: 8191
+            reset: {}
+            relaxed: {}
+            vpindex: {}
+            runtime: {}
+            tlbflush: {}
+            frequencies: {}
+            vapic: {}
+          smm: {}
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: true
+        machine:
+          type: pc-q35-rhel9.2.0
+        memory:
+          guest: {{ vm_memory | default('8') }}Gi
+        resources: {}
+{% if vm_enable_default_network %}
+        - pod: {}
+          name: default
+{% endif %}
+{% if vm_networks is defined %}
+{% for interface in vm_networks %}
+{% if interface.type == "bridge" %}
+        - multus:
+            networkName: vlan{{ interface.source_vlan | string }}
+          name: nic{{ loop.index0 | string }}-{{ interface.source_vlan | string }}
+{% endif %}
+{% endfor %}
+{% endif %}
+      terminationGracePeriodSeconds: 3600
+      volumes:
+        - dataVolume:
+            name: {{ inventory_hostname }}
+          name: rootdisk
+        - containerDisk:
+            image: 'registry.redhat.io/container-native-virtualization/virtio-win-rhel9@sha256:0c536c7aba76eb9c1e75a8f2dc2bbfa017e90314d55b242599ea41f42ba4434f'
+          name: windows-drivers-disk

@@ -73,9 +73,14 @@
         updateservice-registry: |
           {{ mirror_registry_certificate.stdout }}
 
-- name: Modify mirror_registry_ca template to include additionalTrustBundle
+- name: Set openshift-config mirror registry CA cert fact
   ansible.builtin.set_fact:
-      _mirror_registry_ca_configmap: "{{ lookup('template', 'mirror_registry_ca_osus.yml.j2') | from_yaml | combine(_append_updateservice_registry) }}"
+    _append_openshift_config_registry: >-
+      {"data": {"{{ groups['witness'][0] }}..8443": {{ mirror_registry_certificate.stdout | to_json }} }}
+
+- name: Modify mirror_registry_ca_osus template to include additionalTrustBundle
+  ansible.builtin.set_fact:
+      _mirror_registry_ca_configmap: "{{ lookup('template', 'mirror_registry_ca_osus.yml.j2') | from_yaml | combine(_append_openshift_config_registry, _append_updateservice_registry, recursive=True, list_merge='append') }}"
 
 - name: Configure Registry CA cert for OpenShift Update Service
   kubernetes.core.k8s:
@@ -87,14 +92,9 @@
   delegate_to: "{{ groups['witness'][0] }}"
   delegate_facts: false
 
-- name: Set openshift-config mirror registry CA cert fact
-  ansible.builtin.set_fact:
-    _append_openshift_config_registry: >-
-      {"data": {"{{ groups['witness'][0] }}..8443": {{ mirror_registry_certificate.stdout | to_json }} }}
-
 - name: Modify mirror_registry_ca template to include additionalTrustBundle
   ansible.builtin.set_fact:
-      _mirror_registry_ca_configmap: "{{ lookup('template', 'mirror_registry_ca.yml.j2') | from_yaml | combine(_append_openshift_config_registry) | combine(_append_updateservice_registry) }}"
+      _mirror_registry_ca_configmap: "{{ lookup('template', 'mirror_registry_ca.yml.j2') | from_yaml | combine(_append_openshift_config_registry, _append_updateservice_registry, recursive=True, list_merge='append') }}"
 
 - name: Configure Registry CA cert
   kubernetes.core.k8s:
