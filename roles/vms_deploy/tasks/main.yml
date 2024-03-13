@@ -3,6 +3,7 @@
 - name: Complete preflight checks
   ansible.builtin.import_tasks:
     file: prerequisites.yml
+  when: "vm_os == 'windows'"
 
 - name: Retrieve kubeadmin password
   ansible.builtin.slurp:
@@ -44,6 +45,32 @@
         name: "{{ item.project }}"
   delegate_to: "{{ groups['witness'][0] }}"
   loop: "{{ vm_network_attachments }}"
+
+- name: Get mirror registry CA certificate
+  ansible.builtin.shell:
+    cmd: |
+      openssl s_client -showcerts -verify 1 \
+      -connect {{ groups['witness'][0] }}:8443 < /dev/null 2> /dev/null \
+      | awk '/BEGIN CERTIFICATE/&&++k==2,/END CERTIFICATE/'
+  register: mirror_registry_certificate
+  delegate_to: "{{ groups['witness'][0] }}"
+
+- name: Configure registry certs for the project
+  kubernetes.core.k8s:
+    state: present
+    host: "{{ _api_url }}"
+    api_key: "{{ openshift_auth_results['openshift_auth']['api_key'] }}"
+    validate_certs: false
+    resource_definition:
+      kind: ConfigMap
+      apiVersion: v1
+      metadata:
+        name: tls-certs
+        namespace: "{{ vm_project }}"
+      data:
+        ca.pem: |
+          {{ mirror_registry_certificate.stdout }}
+  delegate_to: "{{ groups['witness'][0] }}"
 
 - name: configure VM networks
   kubernetes.core.k8s:
@@ -123,12 +150,22 @@
   delegate_to: "{{ groups['witness'][0] }}"
   when: "vm_os == 'windows'"
 
-- name: Deploy virtual machine (RHEL)
+- name: Deploy virtual machine (RHEL8)
   kubernetes.core.k8s:
     state: present
     host: "{{ _api_url }}"
     api_key: "{{ openshift_auth_results['openshift_auth']['api_key'] }}"
     validate_certs: false
-    definition: "{{ lookup('template', 'rhel.yaml') }}"
+    definition: "{{ lookup('template', 'rhel8.yaml') }}"
   delegate_to: "{{ groups['witness'][0] }}"
-  when: "vm_os == 'rhel'"
+  when: "vm_os == 'rhel8'"
+
+- name: Deploy virtual machine (RHEL9)
+  kubernetes.core.k8s:
+    state: present
+    host: "{{ _api_url }}"
+    api_key: "{{ openshift_auth_results['openshift_auth']['api_key'] }}"
+    validate_certs: false
+    definition: "{{ lookup('template', 'rhel9.yaml') }}"
+  delegate_to: "{{ groups['witness'][0] }}"
+  when: "vm_os == 'rhel9'"
