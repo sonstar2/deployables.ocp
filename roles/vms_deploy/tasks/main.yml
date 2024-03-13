@@ -1,2 +1,119 @@
 ---
 # tasks file for vms_deploy
+- name: Retrieve kubeadmin password
+  ansible.builtin.slurp:
+    src: /home/ansible/{{ vm_cluster }}/auth/kubeadmin-password
+  register: _kubeadmin_password_list
+  delegate_to: "{{ groups['witness'][0] }}"
+  delegate_facts: false
+
+- name: Set kubeadmin password
+  ansible.builtin.set_fact:
+    _kubeadmin_password: "{{ _kubeadmin_password_list['content'] | b64decode }}"
+
+- name: Set API URL
+  ansible.builtin.set_fact:
+    _api_url: "https://api.{{ vm_cluster }}.{{ unid }}.{{ base_domain }}:6443"
+
+- name: Retrieve authentication token
+  community.okd.openshift_auth:
+    username: "kubeadmin"
+    password: "{{ _kubeadmin_password }}"
+    host: "{{ _api_url }}"
+    validate_certs: false
+  register: openshift_auth_results
+  delegate_to: "{{ groups['witness'][0] }}"
+  delegate_facts: false
+
+- name: ensure projects exist
+  kubernetes.core.k8s:
+    state: present
+    host: "{{ _api_url }}"
+    api_key: "{{ openshift_auth_results['openshift_auth']['api_key'] }}"
+    validate_certs: false
+    resource_definition:
+      kind: ProjectRequest
+      apiVersion: project.openshift.io/v1
+      description: "{{ item.project | upper }} project"
+      displayName: "{{ item.project | upper }}"
+      metadata:
+        name: "{{ item.project }}"
+  delegate_to: "{{ groups['witness'][0] }}"
+  loop: "{{ vm_network_attachments }}"
+
+- name: configure VM networks
+  kubernetes.core.k8s:
+    state: present
+    host: "{{ _api_url }}"
+    api_key: "{{ openshift_auth_results['openshift_auth']['api_key'] }}"
+    validate_certs: false
+    resource_definition:
+      apiVersion: nmstate.io/v1beta1
+      kind: NodeNetworkConfigurationPolicy
+      metadata:
+        name: "policy-vlan{{ item }}"
+      spec:
+        desiredState:
+          interfaces:
+            - name: "bond0.{{ item }}"
+              type: vlan
+              state: up
+              ipv4:
+                enabled: false
+              ipv6:
+                enabled: false
+              vlan:
+                base-iface: bond0
+                id: "{{ item }}"
+            - name: "br{{ item }}"
+              type: linux-bridge
+              state: up
+              ipv4:
+                enabled: false
+              ipv6:
+                enabled: false
+              bridge:
+                options:
+                  stp:
+                    enabled: false
+                port:
+                  - name: "bond0.{{ item }}"
+  loop: "{{ vm_network_vlans }}"
+  delegate_to: "{{ groups['witness'][0] }}"
+
+- name: Configure network attachment definitions
+  kubernetes.core.k8s:
+    state: present
+    host: "{{ _api_url }}"
+    api_key: "{{ openshift_auth_results['openshift_auth']['api_key'] }}"
+    validate_certs: false
+    resource_definition:
+      apiVersion: k8s.cni.cncf.io/v1
+      kind: NetworkAttachmentDefinition
+      metadata:
+        annotations:
+          k8s.v1.cni.cncf.io/resourceName: "bridge.network.kubevirt.io/br{{ item.1  }}"
+        name: "vlan{{ item.1  }}"
+        namespace: "{{ item.0.project }}"
+      spec:
+        config: "{{ _networkattachmentdef | to_json | string }}"
+  loop: "{{ vm_network_attachments | subelements('vlans') }}"
+  vars:
+    _networkattachmentdef:
+      name: "vlan{{ item.1  }}"
+      cniVersion: 0.3.1
+      plugins:
+      - type: cnv-bridge
+        bridge: "br{{ item.1 }}"
+        ipam: {}
+      - type: cnv-tuning
+  delegate_to: "{{ groups['witness'][0] }}"
+
+- name: Deploy virtual machine
+  kubernetes.core.k8s:
+    state: present
+    host: "{{ _api_url }}"
+    api_key: "{{ openshift_auth_results['openshift_auth']['api_key'] }}"
+    validate_certs: false
+    definition: "{{ lookup('template', 'virtualmachine.yml.j2') }}"
+  delegate_to: "{{ groups['witness'][0] }}"

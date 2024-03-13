@@ -1,2 +1,4 @@
 ---
 # defaults file for vms_deploy
+vm_network_vlans: []
+vm_network_attachments: []
