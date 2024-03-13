@@ -115,5 +115,16 @@
     host: "{{ _api_url }}"
     api_key: "{{ openshift_auth_results['openshift_auth']['api_key'] }}"
     validate_certs: false
-    definition: "{{ lookup('template', 'virtualmachine.yml.j2') }}"
+    definition: "{{ lookup('template', 'windows.yaml') }}"
   delegate_to: "{{ groups['witness'][0] }}"
+  when: "vm_os == 'windows'"
+
+- name: Deploy virtual machine
+  kubernetes.core.k8s:
+    state: present
+    host: "{{ _api_url }}"
+    api_key: "{{ openshift_auth_results['openshift_auth']['api_key'] }}"
+    validate_certs: false
+    definition: "{{ lookup('template', 'rhel.yaml') }}"
+  delegate_to: "{{ groups['witness'][0] }}"
+  when: "vm_os == 'rhel'"
