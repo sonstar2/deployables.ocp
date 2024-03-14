@@ -21,6 +21,8 @@ spec:
       env:
         - name: GITLAB_OMNIBUS_CONFIG
           value: "external_url 'http://{{ inventory_hostname }}:8444'; gitlab_rails['gitlab_shell_ssh_port'] = 2222; puma['port'] = 8445"
+        - name: GITLAB_ROOT_PASSWORD
+          value: "{{ gitlab_root_password }}"
   volumes:
     - name: gitlab-config
       hostPath:

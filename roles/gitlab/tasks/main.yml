@@ -33,13 +33,11 @@
   retries: 60
   delay: 10
 
-- name: Get initial GitLab credentials
+- name: List projects
   ansible.builtin.shell:
     cmd: |
-      podman exec -it gitlab-app cat /etc/gitlab/initial_root_password | grep "Password:" | tr -d ' ' | cut -d ':' -f2
-  register: gitlab_credentials_result
-
-- name: debug
-  ansible.builtin.debug:
-    var: gitlab_credentials_result.stdout
-
+      export GITLAB_CREDS='root:{{ gitlab_root_password }}'
+      export GITLAB_BASE_URL="http://${GITLAB_CREDS}@$(hostname -f):8444/api/v4"
+      curl --request GET ${GITLAB_BASE_URL}/projects
+      curl
+  register: gitlab_projects
