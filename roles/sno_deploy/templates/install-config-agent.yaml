@@ -99,4 +99,6 @@ imageContentSources:
   - mirrors:
     - "{{ groups['witness'][0] }}:8443/mssql"
     source: mcr.microsoft.com/mssql
-
+  - mirrors:
+    - '{{ groups['witness'][0] }}:8443/containerdisks'
+    source: quay.io/containerdisks
