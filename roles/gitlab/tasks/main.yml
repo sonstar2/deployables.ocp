@@ -34,10 +34,28 @@
   delay: 10
 
 - name: List projects
-  ansible.builtin.shell:
-    cmd: |
-      export GITLAB_CREDS='root:{{ gitlab_root_password }}'
-      export GITLAB_BASE_URL="http://${GITLAB_CREDS}@$(hostname -f):8444/api/v4"
-      curl --request GET ${GITLAB_BASE_URL}/projects
-      curl
+  ansible.builtin.uri:
+    url: "http://{{ groups['witness'][0] }}:8444/api/v4/projects"
+    url_username: root
+    url_password: "{{ gitlab_root_password }}"
   register: gitlab_projects
+  tags:
+    - gitlab-projects
+
+- name: Create gitops project
+  ansible.builtin.uri:
+    url: "http://{{ groups['witness'][0] }}:8444/api/v4/projects"
+    url_username: root
+    url_password: "{{ gitlab_root_password }}"
+    method: POST
+    body_format: json
+    body:
+      name: deployables-gitops
+      default_branch: main
+      initialize_with_readme: true
+      description: "Stores artefacts required for ArgoCD"
+      visibility: public
+  when: "gitlab_projects.json | length == 0"
+  register: gitlab_gitops_project
+  tags:
+    - gitlab-projects
