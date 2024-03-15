@@ -1,0 +1,22 @@
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+  name: update-service-alt-route
+  namespace: openshift-update-service
+  labels:
+    app: update-service
+spec:
+  subdomain: update-service
+  to:
+    kind: Service
+    name: update-service-policy-engine
+    weight: 100
+  port:
+    targetPort: policy-engine
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Allow
+  wildcardPolicy: None

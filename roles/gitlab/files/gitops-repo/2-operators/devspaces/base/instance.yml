@@ -1,0 +1,32 @@
+---
+apiVersion: org.eclipse.che/v2
+kind: CheCluster
+metadata:
+  name: devspaces
+  namespace: openshift-devspaces
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  components:
+    cheServer:
+      debug: false
+      logLevel: INFO
+    metrics:
+      enable: true
+    pluginRegistry:
+      openVSXURL: ''
+  containerRegistry: {}
+  devEnvironments:
+    imagePullPolicy: IfNotPresent
+    secondsOfRunBeforeIdling: -1
+    maxNumberOfWorkspacesPerUser: -1
+    maxNumberOfRunningWorkspacesPerUser: -1
+    defaultNamespace:
+      template: <username>-devspaces
+    secondsOfInactivityBeforeIdling: 43200
+    storage:
+      pvcStrategy: per-workspace
+    persistUserHome:
+      enabled: true
+  networking: {}

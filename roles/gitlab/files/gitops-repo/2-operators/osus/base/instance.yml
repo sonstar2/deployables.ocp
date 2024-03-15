@@ -1,0 +1,12 @@
+---
+apiVersion: updateservice.operator.openshift.io/v1
+kind: UpdateService
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+  name: update-service
+  namespace: openshift-update-service
+spec:
+  replicas: 2
+  releases: <change-me>
+  graphDataImage: registry.redhat.io/openshift/graph-image

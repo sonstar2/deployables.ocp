@@ -1,0 +1,56 @@
+---
+apiVersion: config.openshift.io/v1
+kind: OperatorHub
+metadata:
+  name: cluster
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  sources:
+    - disabled: true
+      name: certified-operators
+    - disabled: true
+      name: community-operators
+    - disabled: true
+      name: redhat-operators
+    - disabled: true
+      name: redhat-marketplace
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: redhat-operators-mirrored
+  namespace: openshift-marketplace
+spec:
+  displayName: Red Hat Operators - Mirrored
+  grpcPodConfig:
+    nodeSelector:
+      kubernetes.io/os: linux
+      node-role.kubernetes.io/master: ''
+    priorityClassName: system-cluster-critical
+    securityContextConfig: restricted
+    tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+        operator: Exists
+      - effect: NoExecute
+        key: node.kubernetes.io/unreachable
+        operator: Exists
+        tolerationSeconds: 120
+      - effect: NoExecute
+        key: node.kubernetes.io/not-ready
+        operator: Exists
+        tolerationSeconds: 120
+  icon:
+    base64data: ''
+    mediatype: ''
+  image: 'witness-node.uotest01.poc.lab.local:8443/redhat/redhat-operator-index:v4.14'
+  priority: -100
+  publisher: Red Hat
+  sourceType: grpc
+  secrets:
+    - pull-secret
+  updateStrategy:
+    registryPoll:
+      interval: 10m
+

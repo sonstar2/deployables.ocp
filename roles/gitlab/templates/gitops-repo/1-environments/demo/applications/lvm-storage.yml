@@ -2,17 +2,19 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: operators
+  name: lvm-storage
   namespace: openshift-gitops
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   destination:
-    namespace: openshift-operators
+    namespace: openshift-storage
     server: 'https://kubernetes.default.svc'
   project: default
   source:
-    path: 1-environments/demo
+    path: 2-operators/lvm-storage/overlays/stable-4.14
     repoURL: >-
-      https://github.com/ahussey-redhat/deployables-gitops.git
+      http://{{ groups['witness'][0] }}:8444/root/deployables-gitops.git
     targetRevision: main
   syncPolicy:
     automated:

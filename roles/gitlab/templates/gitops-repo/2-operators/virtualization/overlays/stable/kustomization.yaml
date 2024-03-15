@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+patches:
+  - target:
+      kind: HyperConverged
+      name: kubevirt-hyperconverged
+    patch: |-
+      - op: replace
+        path: /spec/storageImport/insecureRegistries/0
+        value: '{{ groups['witness'][0] }}:8443'

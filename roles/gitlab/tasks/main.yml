@@ -80,7 +80,59 @@
     repo: "http://oauth2:{{ gitlab_oauth.json.access_token }}@{{ groups['witness'][0] }}:8444/root/deployables-gitops.git"
     dest: /home/ansible/deployables-gitops
     version: main
+    force: false
+    update: false
+  tags:
+    - gitlab-projects
+  become: false
+  register: gitops_repo_clone
+
+- name: Create content in gitops repo
+  ansible.builtin.copy:
+    dest: /home/ansible/deployables-gitops
+    directory_mode: u=rwX,g=rwX,o=rX
+    group: ansible
+    owner: ansible
+    mode: u=rwX,g=rwX,o=rX
+    src: gitops-repo/
+  when: gitops_repo_clone.changed
   tags:
     - gitlab-projects
   become: false
 
+- name: Create directories for templates in deployables-gitops repo
+  ansible.builtin.file:
+    path: /home/ansible/deployables-gitops/{{ item.path }}
+    state: directory
+  with_community.general.filetree: "{{ role_path }}/templates/gitops-repo/"
+  when:
+    - "item.state == 'directory'"
+    - gitops_repo_clone.changed
+  tags:
+    - gitlab-projects
+  become: false
+
+- name: Template files in deployables-gitops repo
+  ansible.builtin.template:
+    src: '{{ item.src }}'
+    dest: /home/ansible/deployables-gitops/{{ item.path }}
+  with_community.general.filetree: "{{ role_path }}/templates/gitops-repo/"
+  when:
+    - "item.state == 'file'"
+    - gitops_repo_clone.changed
+  tags:
+    - gitlab-projects
+  become: false
+
+- name: Push changes to repo
+  ansible.builtin.shell: |
+    cd /home/ansible/deployables-gitops
+    git config user.name "ansible"
+    git config user.email "ansible@{{ unid }}.{{ base_domain }}"
+    git add --all
+    git commit -m "Base content"
+    git push -u origin main
+  when: gitops_repo_clone.changed
+  tags:
+    - gitlab-projects
+  become: false

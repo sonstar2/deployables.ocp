@@ -1,0 +1,21 @@
+---
+apiVersion: config.openshift.io/v1
+kind: ImageTagMirrorSet
+metadata:
+  name: local-registry
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  imageTagMirrors:
+    - mirrors:
+        - 'witness-node.uotest01.poc.lab.local:8443/rhel8'
+      source: registry.redhat.io/rhel8
+    - mirrors:
+        - 'witness-node.uotest01.poc.lab.local:8443/rhel9'
+      source: registry.redhat.io/rhel9
+    - mirrors:
+        - 'witness-node.uotest01.poc.lab.local:8443/containerdisks'
+      source: quay.io/containerdisks
+    - mirrors:
+        - 'witness-node.uotest01.poc.lab.local:8443/openshift/graph-image'
+      source: registry.redhat.io/openshift/graph-image
