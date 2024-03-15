@@ -41,6 +41,7 @@
   register: gitlab_oauth
   tags:
     - gitlab-projects
+  become: false
 
 - name: List projects
   ansible.builtin.uri:
@@ -50,6 +51,7 @@
   register: gitlab_projects
   tags:
     - gitlab-projects
+  become: false
 
 - name: Create gitops project
   ansible.builtin.uri:
@@ -71,3 +73,14 @@
   register: gitlab_gitops_project
   tags:
     - gitlab-projects
+  become: false
+
+- name: Ensure gitops repo is available locally
+  ansible.builtin.git:
+    repo: "http://oauth2:{{ gitlab_oauth.json.access_token }}@{{ groups['witness'][0] }}:8444/root/deployables-gitops.git"
+    dest: /home/ansible/deployables-gitops
+    version: main
+  tags:
+    - gitlab-projects
+  become: false
+
