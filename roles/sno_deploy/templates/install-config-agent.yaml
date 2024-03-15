@@ -37,9 +37,6 @@ imageContentSources:
     - "{{ groups['witness'][0] }}:8443/openshift4"
     source: registry.redhat.io/openshift4
   - mirrors:
-    - "{{ groups['witness'][0] }}:8443/odf4"
-    source: registry.redhat.io/odf4
-  - mirrors:
     - "{{ groups['witness'][0] }}:8443/lvms4"
     source: registry.redhat.io/lvms4
   - mirrors:

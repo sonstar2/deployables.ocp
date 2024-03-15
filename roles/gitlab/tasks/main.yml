@@ -33,11 +33,20 @@
   retries: 60
   delay: 10
 
+- name: Create access token
+  ansible.builtin.uri:
+    url: http://{{ groups['witness'][0] }}:8444/oauth/token
+    method: POST
+    body: grant_type=password&username=root&password={{ gitlab_root_password }}
+  register: gitlab_oauth
+  tags:
+    - gitlab-projects
+
 - name: List projects
   ansible.builtin.uri:
     url: "http://{{ groups['witness'][0] }}:8444/api/v4/projects"
-    url_username: root
-    url_password: "{{ gitlab_root_password }}"
+    headers:
+      Authorization: "Bearer {{ gitlab_oauth.json.access_token }}"
   register: gitlab_projects
   tags:
     - gitlab-projects
@@ -45,9 +54,12 @@
 - name: Create gitops project
   ansible.builtin.uri:
     url: "http://{{ groups['witness'][0] }}:8444/api/v4/projects"
-    url_username: root
-    url_password: "{{ gitlab_root_password }}"
+    status_code:
+      - 200
+      - 201
     method: POST
+    headers:
+      Authorization: "Bearer {{ gitlab_oauth.json.access_token }}"
     body_format: json
     body:
       name: deployables-gitops
