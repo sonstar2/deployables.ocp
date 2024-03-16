@@ -79,6 +79,16 @@
       insecure = true
 
       [[registry]]
+      prefix = "quay.io/openshift-release-dev/ocp-v4.0-art-dev"
+      location = "{{ groups['witness'][0] }}:8443/openshift/release"
+      insecure = true
+
+      [[registry]]
+      prefix = "quay.io/openshift-release-dev/ocp-release"
+      location = "{{ groups['witness'][0] }}:8443/openshift/release-images"
+      insecure = true
+
+      [[registry]]
       location = "{{ groups['witness'][0] }}:8443"
       insecure = true
     dest: /etc/containers/registries.conf.d/010-mirror-registry.conf
