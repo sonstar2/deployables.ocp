@@ -18,7 +18,11 @@ hosts:
           state: up
           mac-address: {{ hostvars[item]['interfaces'][0]['mac_address'] }}
           ipv4:
-            enabled: false
+            enabled: true
+            dhcp: true
+            auto-dns: true
+            auto-gateway: true
+            auto-routes: true
           ipv6:
             enabled: false
           link-aggregation:
@@ -28,22 +32,5 @@ hosts:
             port:
               - eno1
               - eno2
-        - name: br100
-          type: linux-bridge
-          state: up
-          ipv4:
-            enabled: true
-            dhcp: true
-            auto-dns: true
-            auto-gateway: true
-            auto-routes: true
-          ipv6:
-            enabled: false
-          bridge:
-            options:
-              stp:
-                enabled: false
-            port:
-              - name: bond0
     rootDeviceHints:
       deviceName: "/dev/nvme4n1"
