@@ -97,5 +97,11 @@ imageContentSources:
     - "{{ groups['witness'][0] }}:8443/mssql"
     source: mcr.microsoft.com/mssql
   - mirrors:
-    - '{{ groups['witness'][0] }}:8443/containerdisks'
+    - "{{ groups['witness'][0] }}:8443/containerdisks"
     source: quay.io/containerdisks
+  - mirrors:
+    - "{{ groups['witness'][0] }}:8443/service-interconnect"
+    source: registry.redhat.io/service-interconnect
+  - mirrors:
+    - "{{ groups['witness'][0] }}:8443/openshift-service-mesh"
+    source: registry.redhat.io/openshift-service-mesh

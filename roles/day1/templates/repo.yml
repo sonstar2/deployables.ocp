@@ -13,5 +13,5 @@ data:
   name: Z2l0b3Bz
   project: ZGVmYXVsdA==
   type: Z2l0
-  url: {{ 'http://' + groups['witness'][0] + ':8444/root/deployables-gitops.git' | b64encode }}
+  url: {{ ('http://' + groups['witness'][0] + ':8444/root/deployables-gitops.git') | b64encode }}
 type: Opaque
