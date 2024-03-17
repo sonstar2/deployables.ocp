@@ -140,6 +140,7 @@ spec:
           name: rootdisk
         - cloudInitNoCloud:
             hostname: "{{ inventory_hostname }}"
+            admin_pass: "{{ ansible_password }}"
             userData: |
               #cloud-config
               users:
