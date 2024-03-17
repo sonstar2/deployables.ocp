@@ -19,7 +19,7 @@ spec:
       spec:
         sourceRef:
           kind: DataSource
-          name: win2k22
+          name: win2k22-qcow2
           namespace: openshift-virtualization-os-images
         storage:
           resources:
