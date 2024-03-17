@@ -10,3 +10,7 @@ patches:
       - op: replace
         path: /spec/releases
         value: '{{ groups['witness'][0] }}:8443/openshift/release-images'
+    patch: |-
+      - op: replace
+        path: /spec/graphDataImage
+        value: '{{ groups['witness'][0] }}:8443/openshift/graph-image:latest'
