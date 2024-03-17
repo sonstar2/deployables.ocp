@@ -9,4 +9,4 @@ metadata:
 spec:
   replicas: 2
   releases: <change-me>
-  graphDataImage: registry.redhat.io/openshift/graph-image
+  graphDataImage: registry.redhat.io/openshift/graph-image:latest
