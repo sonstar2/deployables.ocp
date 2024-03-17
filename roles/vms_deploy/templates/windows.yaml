@@ -17,10 +17,10 @@ spec:
       metadata:
         name: {{ vm_name }}
       spec:
-        sourceRef:
-          kind: DataSource
-          name: win2k22-qcow2
-          namespace: openshift-virtualization-os-images
+        source:
+          pvc:
+            name: win2k22-qcow2
+            namespace: openshift-virtualization-os-images
         storage:
           resources:
             requests:
@@ -139,11 +139,14 @@ spec:
             name: {{ vm_name }}
           name: rootdisk
         - cloudInitNoCloud:
-            hostname: {{ inventory_hostname }}
+            hostname: "{{ inventory_hostname }}"
             userData: |
               #cloud-config
-              user: {{ ansible_user }}
-              password: {{ ansible_password }}
+              users:
+                - name: {{ ansible_user }}
+                  passwd: {{ ansible_password }}
+                  primary_group: Administrators
+                  inactive: false
           name: cloudinitdisk
         # - containerDisk:
         #     image: 'registry.redhat.io/container-native-virtualization/virtio-win-rhel9@sha256:0c536c7aba76eb9c1e75a8f2dc2bbfa017e90314d55b242599ea41f42ba4434f'
