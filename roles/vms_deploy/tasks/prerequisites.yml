@@ -55,6 +55,6 @@
 - name: Create pvc if it doesn't exists
   ansible.builtin.shell: |
     export KUBECONFIG=/home/ansible/{{ vm_cluster }}/auth/kubeconfig
-    virtctl image-upload dv win2k22-qcow2 --size 80Gi --image-path /home/ansible/win2k22.qcow2 --force
+    virtctl image-upload dv win2k22-qcow2 --size 80Gi --image-path /home/ansible/win2k22.qcow2 --insecure --force-bind
   when: "_new_images | length>0"
   delegate_to: "{{ groups['witness'][0] }}"
