@@ -58,9 +58,9 @@ spec:
             - disk:
                 bus: virtio
               name: rootdisk
-            - cdrom:
-                bus: sata
-              name: windows-drivers-disk
+            # - cdrom:
+            #     bus: sata
+            #   name: windows-drivers-disk
           inputs:
             - bus: usb
               name: tablet
