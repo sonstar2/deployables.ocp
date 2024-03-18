@@ -1,0 +1,224 @@
+---
+# tasks file for core_deploy
+- name: Retrieve Hub authentication token
+  community.okd.openshift_auth:
+    username: "cluster-admin"
+    password: "{{ hub_admin_password }}"
+    host: "{{ hub_api_url }}"
+    validate_certs: false
+  register: openshift_auth_results
+
+- name: configure argocd namespace
+  kubernetes.core.k8s:
+    resource_definition: "{{ lookup('ansible.builtin.file', 'namespace.yml') }}"
+    host: "{{ hub_api_url }}"
+    api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
+    validate_certs: false
+  failed_when: false
+
+- name: configure argocd operatorgroup
+  kubernetes.core.k8s:
+    resource_definition: "{{ lookup('ansible.builtin.file', 'operatorgroup.yml') }}"
+    host: "{{ hub_api_url }}"
+    api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
+    validate_certs: false
+
+- name: configure argocd subscription
+  kubernetes.core.k8s:
+    resource_definition: "{{ lookup('ansible.builtin.file', 'subscription.yml') }}"
+    host: "{{ hub_api_url }}"
+    api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
+    validate_certs: false
+  failed_when: false
+
+- name: wait for ArgoCD to start deploying
+  ansible.builtin.pause:
+    echo: no
+    prompt: "Waiting for ArgoCD to start deploying"
+    seconds: 10
+
+- name: configure argocd subscription - retry
+  kubernetes.core.k8s:
+    resource_definition: "{{ lookup('ansible.builtin.file', 'subscription.yml') }}"
+    host: "{{ hub_api_url }}"
+    api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
+    validate_certs: false
+  register: deploy_argocd
+  until: "deploy_argocd.result.status.state == 'AtLatestKnown'"
+  retries: 10
+  delay: 10
+
+- name: configure argocd cluster role binding
+  kubernetes.core.k8s:
+    resource_definition: "{{ lookup('ansible.builtin.file', 'clusterrolebinding.yml') }}"
+    host: "{{ hub_api_url }}"
+    api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
+    validate_certs: false
+
+- name: configure argocd repo
+  kubernetes.core.k8s:
+    resource_definition: "{{ lookup('ansible.builtin.template', 'repo.yml') }}"
+    host: "{{ hub_api_url }}"
+    api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
+    validate_certs: false
+
+- name: configure argocd initial application
+  kubernetes.core.k8s:
+    resource_definition: "{{ lookup('ansible.builtin.file', 'application.yml') }}"
+    host: "{{ hub_api_url }}"
+    api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
+    validate_certs: false
+
+# This namespace is later managed by GitOps, but is required for the initial bootstrapping to complete
+- name: configure core-services project
+  kubernetes.core.k8s:
+    host: "{{ hub_api_url }}"
+    api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
+    validate_certs: false
+    resource_definition:
+      kind: Project
+      apiVersion: project.openshift.io/v1
+      metadata:
+        name: core-services
+        labels:
+          kubernetes.io/metadata.name: core-services
+  failed_when: false
+
+- name: configure AAP SSO secret
+  kubernetes.core.k8s:
+    host: "{{ hub_api_url }}"
+    api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
+    validate_certs: false
+    resource_definition:
+      kind: Secret
+      apiVersion: v1
+      metadata:
+        name: oidc
+        namespace: core-services
+      data:
+        key: "{{ sso_oidc_key | b64encode }}"
+        secret: "{{ sso_oidc_secret | b64encode }}"
+        endpoint: "{{ sso_oidc_endpoint | b64encode }}"
+        verify-ssl: "{{ sso_oidc_verify_ssl | default('true') | b64encode }}"
+
+# Possibly use ODF + Multicloud Object Gateway instead
+# This namespace is later managed by Amazon Controller for Kubernetes - Amazon S3 Operator, but is required for the initial bootstrapping to complete
+- name: configure ack-system project
+  kubernetes.core.k8s:
+    host: "{{ hub_api_url }}"
+    api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
+    validate_certs: false
+    resource_definition:
+      kind: Project
+      apiVersion: project.openshift.io/v1
+      metadata:
+        name: ack-system
+        labels:
+          kubernetes.io/metadata.name: ack-system
+  failed_when: false
+
+- name: configure ack-s3-user-secrets
+  kubernetes.core.k8s:
+    host: "{{ hub_api_url }}"
+    api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
+    validate_certs: false
+    resource_definition:
+      kind: Secret
+      apiVersion: v1
+      metadata:
+        name: ack-s3-user-secrets
+        namespace: ack-system
+      data:
+        AWS_ACCESS_KEY_ID: "{{ aws_access_key_id | b64encode}}"
+        AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key | b64encode }}"
+      type: Opaque
+
+- name: configure ack-s3-user-config
+  kubernetes.core.k8s:
+    host: "{{ hub_api_url }}"
+    api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
+    validate_certs: false
+    resource_definition:
+      kind: ConfigMap
+      apiVersion: v1
+      metadata:
+        name: ack-s3-user-config
+        namespace: ack-system
+      immutable: false
+      data:
+        ACK_ENABLE_DEVELOPMENT_LOGGING: 'false'
+        ACK_LOG_LEVEL: info
+        ACK_RESOURCE_TAGS: core-services
+        ACK_WATCH_NAMESPACE: ''
+        AWS_REGION: ap-southeast-2
+        AWS_ENDPOINT_URL: ''
+        ENABLE_LEADER_ELECTION: 'true'
+        LEADER_ELECTION_NAMESPACE: ''
+
+# This namespace is later managed by Red Hat Advanced Cluster Management for Kubernetes - Amazon S3 Operator, but is required for the initial bootstrapping to complete
+- name: configure open-cluster-management-observability project
+  kubernetes.core.k8s:
+    host: "{{ hub_api_url }}"
+    api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
+    validate_certs: false
+    resource_definition:
+      kind: Project
+      apiVersion: project.openshift.io/v1
+      metadata:
+        name: open-cluster-management-observability
+        labels:
+          kubernetes.io/metadata.name: open-cluster-management-observability
+  failed_when: false
+
+- name: acm observability secret
+  kubernetes.core.k8s:
+    host: "{{ hub_api_url }}"
+    api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
+    validate_certs: false
+    resource_definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: thanos-object-storage
+        namespace: open-cluster-management-observability
+      type: Opaque
+      stringData:
+        thanos.yaml: |
+          type: s3
+          config:
+            bucket: "{{ 'rhacm-observability-thanos'| b64encode }}"
+            endpoint: s3.ap-southeast-2.amazonaws.com
+            insecure: true
+            access_key: "{{ aws_access_key_id | b64encode}}"
+            secret_key: "{{ aws_secret_access_key | b64encode }}"
+
+# This namespace is later managed by Red Hat Advanced Cluster Management for Kubernetes - Amazon S3 Operator, but is required for the initial bootstrapping to complete
+- name: configure openshift-logging project
+  kubernetes.core.k8s:
+    host: "{{ hub_api_url }}"
+    api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
+    validate_certs: false
+    resource_definition:
+      kind: Project
+      apiVersion: project.openshift.io/v1
+      metadata:
+        name: openshift-logging
+        labels:
+          kubernetes.io/metadata.name: openshift-logging
+  failed_when: false
+
+- name: openshift-logging secret
+  kubernetes.core.k8s:
+    host: "{{ hub_api_url }}"
+    api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
+    validate_certs: false
+    resource_definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: aws-credentials
+        namespace: openshift-logging
+      type: Opaque
+      stringData:
+        aws_access_key_id: "{{ aws_access_key_id | b64encode}}"
+        aws_secret_access_key: "{{ aws_secret_access_key | b64encode }}"

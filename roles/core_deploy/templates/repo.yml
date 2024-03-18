@@ -1,0 +1,16 @@
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: gitops-bootstrap-repo
+  namespace: openshift-gitops
+  labels:
+    argocd.argoproj.io/secret-type: repository
+  annotations:
+    managed-by: argocd.argoproj.io
+data:
+  name: Z2l0b3BzLWJvb3RzdHJhcA==
+  project: ZGVmYXVsdA==
+  type: Z2l0
+  url: {{ 'https://github.com/ahussey-redhat/deployables-gitops.git' | b64encode }}
+type: Opaque
