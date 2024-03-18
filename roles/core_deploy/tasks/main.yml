@@ -2,7 +2,7 @@
 # tasks file for core_deploy
 - name: Retrieve Hub authentication token
   community.okd.openshift_auth:
-    username: "cluster-admin"
+    username: "kubeadmin"
     password: "{{ hub_admin_password }}"
     host: "{{ hub_api_url }}"
     validate_certs: false
