@@ -11,8 +11,8 @@ repo --name="AppStream" --baseurl=file:///run/install/sources/mount-0000-cdrom/A
 
 %end
 
-network  --bootproto=dhcp --device=enp4s0 --ipv6=auto --activate
-network  --hostname={{ groups["witness"][0] }}
+network --device=bond0  --bootproto=dhcp --bondopts=mode=802.3ad --bondslaves=enp4s0,enp5s0 --ipv6=auto --activate
+network --hostname={{ groups["witness"][0] }}
 
 %packages
 @^virtualization-host-environment
