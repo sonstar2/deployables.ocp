@@ -29,24 +29,12 @@
     host: "{{ hub_api_url }}"
     api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
     validate_certs: false
-  failed_when: false
 
 - name: wait for ArgoCD to start deploying
   ansible.builtin.pause:
     echo: no
     prompt: "Waiting for ArgoCD to start deploying"
-    seconds: 10
-
-- name: configure argocd subscription - retry
-  kubernetes.core.k8s:
-    resource_definition: "{{ lookup('ansible.builtin.file', 'subscription.yml') }}"
-    host: "{{ hub_api_url }}"
-    api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
-    validate_certs: false
-  register: deploy_argocd
-  until: "deploy_argocd.result.status.state == 'AtLatestKnown'"
-  retries: 10
-  delay: 10
+    seconds: 30
 
 - name: configure argocd cluster role binding
   kubernetes.core.k8s:
@@ -84,25 +72,6 @@
           kubernetes.io/metadata.name: core-services
   failed_when: false
 
-- name: configure AAP SSO secret
-  kubernetes.core.k8s:
-    host: "{{ hub_api_url }}"
-    api_key: "{{ openshift_auth_results.openshift_auth.api_key }}"
-    validate_certs: false
-    resource_definition:
-      kind: Secret
-      apiVersion: v1
-      metadata:
-        name: oidc
-        namespace: core-services
-      data:
-        key: "{{ sso_oidc_key | b64encode }}"
-        secret: "{{ sso_oidc_secret | b64encode }}"
-        endpoint: "{{ sso_oidc_endpoint | b64encode }}"
-        verify-ssl: "{{ sso_oidc_verify_ssl | default('true') | b64encode }}"
-
-# Possibly use ODF + Multicloud Object Gateway instead
-# This namespace is later managed by Amazon Controller for Kubernetes - Amazon S3 Operator, but is required for the initial bootstrapping to complete
 - name: configure ack-system project
   kubernetes.core.k8s:
     host: "{{ hub_api_url }}"
