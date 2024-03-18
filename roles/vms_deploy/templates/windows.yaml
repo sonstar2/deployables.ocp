@@ -149,6 +149,8 @@ spec:
                   passwd: {{ ansible_password }}
                   primary_group: Administrators
                   inactive: false
+                  ssh_authorized_keys:
+                    - "{{ ssh_pub_key }}"
               set_hostname: {{ inventory_hostname }}
           name: cloudinitdisk
         # - containerDisk:

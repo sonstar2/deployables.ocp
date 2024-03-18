@@ -38,6 +38,13 @@ spec:
         kubevirt.io/domain: {{ vm_name }}
         kubevirt.io/size: medium
     spec:
+      accessCredentials:
+        - sshPublicKey:
+            propagationMethod:
+              configDrive: {}
+            source:
+              secret:
+                secretName: ssh-pubkey
       architecture: amd64
       domain:
         cpu:
