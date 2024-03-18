@@ -21,8 +21,7 @@ spec:
         source:
           registry:
             url: 'docker://{{ groups['witness'][0] }}:8443/rhel8/rhel-guest-image:latest'
-            secretRef: data-source-registry-secret
-            certConfigMap: tls-certs
+            pullMethod: node
         storage:
           resources:
             requests:
