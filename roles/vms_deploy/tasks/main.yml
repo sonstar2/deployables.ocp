@@ -140,92 +140,92 @@
       - type: cnv-tuning
   delegate_to: "{{ groups['witness'][0] }}"
 
-- name: Configure unattend file
-  kubernetes.core.k8s:
-    state: present
-    host: "{{ _api_url }}"
-    api_key: "{{ openshift_auth_results['openshift_auth']['api_key'] }}"
-    validate_certs: false
-    resource_definition:
-      apiVersion: v1
-      kind: ConfigMap
-      metadata:
-        name: windows2k22-autounattend
-        namespace: "{{ vm_project }}"
-      data:
-        autounattend.xml: |
-          <?xml version="1.0" encoding="utf-8"?>
-          <unattend xmlns="urn:schemas-microsoft-com:unattend" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
-            <settings pass="windowsPE">
-              <component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
-                <SetupUILanguage>
-                  <UILanguage>en-US</UILanguage>
-                </SetupUILanguage>
-                <InputLocale>0409:00000409</InputLocale>
-                <SystemLocale>en-US</SystemLocale>
-                <UILanguage>en-US</UILanguage>
-                <UserLocale>en-US</UserLocale>
-              </component>
-              <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
-                <UserData>
-                  <AcceptEula>true</AcceptEula>
-                </UserData>
-              </component>
-            </settings>
-            <settings pass="oobeSystem">
-              <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
-                <InputLocale>0409:00000409</InputLocale>
-                <SystemLocale>en-US</SystemLocale>
-                <UILanguage>en-US</UILanguage>
-                <UILanguageFallback>en-US</UILanguageFallback>
-                <UserLocale>en-US</UserLocale>
-              </component>
-              <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
-                <UserAccounts>
-                  <AdministratorPassword>
-                    <Value>{{ ansible_password }}</Value>
-                    <PlainText>true</PlainText>
-                  </AdministratorPassword>
-                </UserAccounts>
-                <AutoLogon>
-                  <Enabled>true</Enabled>
-                  <Password>
-                    <Value>{{ ansible_password }}</Value>
-                    <PlainText>true</PlainText>
-                  </Password>
-                  <Username>Administrator</Username>
-                </AutoLogon>
-                <TimeZone>UTC</TimeZone>
-                <OOBE>
-                  <HideEULAPage>true</HideEULAPage>
-                  <HideLocalAccountScreen>true</HideLocalAccountScreen>
-                  <HideOEMRegistrationScreen>true</HideOEMRegistrationScreen>
-                  <HideOnlineAccountScreens>true</HideOnlineAccountScreens>
-                  <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>
-                  <NetworkLocation>Work</NetworkLocation>
-                  <ProtectYourPC>3</ProtectYourPC>
-                </OOBE>
-                <FirstLogonCommands>
-                  <SynchronousCommand wcm:action="add">
-                    <Order>1</Order>
-                    <CommandLine>PowerShell -ExecutionPolicy Bypass -NoProfile F:\post-install.ps1</CommandLine>
-                    <Description>Run post-install.ps1 script</Description>
-                  </SynchronousCommand>
-                </FirstLogonCommands>
-              </component>
-            </settings>
-          </unattend>
-        post-install.ps1: |
-          # Install virtio guest drivers
-          Start-Process msiexec -Wait -ArgumentList '/i E:\virtio-win-gt-x64.msi /qn /passive /norestart'
-          # Install qemu guest agent
-          Start-Process msiexec -Wait -ArgumentList "/i E:\guest-agent\qemu-ga-x86_64.msi /qn /passive /norestart"
-          # Rename cached unattend.xml to avoid it is picked up by sysprep
-          mv C:\Windows\Panther\unattend.xml C:\Windows\Panther\unattend.install.xml
-          # Eject CD, to avoid that the unattend.xml on the CD is picked up by sysprep
-          (New-Object -COMObject Shell.Application).NameSpace(17).ParseName("F:").InvokeVerb("Eject")
-  delegate_to: "{{ groups['witness'][0] }}"
-  when: "vm_os == 'windows'"
+# - name: Configure unattend file
+#   kubernetes.core.k8s:
+#     state: present
+#     host: "{{ _api_url }}"
+#     api_key: "{{ openshift_auth_results['openshift_auth']['api_key'] }}"
+#     validate_certs: false
+#     resource_definition:
+#       apiVersion: v1
+#       kind: ConfigMap
+#       metadata:
+#         name: windows2k22-autounattend
+#         namespace: "{{ vm_project }}"
+#       data:
+#         autounattend.xml: |
+#           <?xml version="1.0" encoding="utf-8"?>
+#           <unattend xmlns="urn:schemas-microsoft-com:unattend" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
+#             <settings pass="windowsPE">
+#               <component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+#                 <SetupUILanguage>
+#                   <UILanguage>en-US</UILanguage>
+#                 </SetupUILanguage>
+#                 <InputLocale>0409:00000409</InputLocale>
+#                 <SystemLocale>en-US</SystemLocale>
+#                 <UILanguage>en-US</UILanguage>
+#                 <UserLocale>en-US</UserLocale>
+#               </component>
+#               <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+#                 <UserData>
+#                   <AcceptEula>true</AcceptEula>
+#                 </UserData>
+#               </component>
+#             </settings>
+#             <settings pass="oobeSystem">
+#               <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+#                 <InputLocale>0409:00000409</InputLocale>
+#                 <SystemLocale>en-US</SystemLocale>
+#                 <UILanguage>en-US</UILanguage>
+#                 <UILanguageFallback>en-US</UILanguageFallback>
+#                 <UserLocale>en-US</UserLocale>
+#               </component>
+#               <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+#                 <UserAccounts>
+#                   <AdministratorPassword>
+#                     <Value>{{ ansible_password }}</Value>
+#                     <PlainText>true</PlainText>
+#                   </AdministratorPassword>
+#                 </UserAccounts>
+#                 <AutoLogon>
+#                   <Enabled>true</Enabled>
+#                   <Password>
+#                     <Value>{{ ansible_password }}</Value>
+#                     <PlainText>true</PlainText>
+#                   </Password>
+#                   <Username>Administrator</Username>
+#                 </AutoLogon>
+#                 <TimeZone>UTC</TimeZone>
+#                 <OOBE>
+#                   <HideEULAPage>true</HideEULAPage>
+#                   <HideLocalAccountScreen>true</HideLocalAccountScreen>
+#                   <HideOEMRegistrationScreen>true</HideOEMRegistrationScreen>
+#                   <HideOnlineAccountScreens>true</HideOnlineAccountScreens>
+#                   <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>
+#                   <NetworkLocation>Work</NetworkLocation>
+#                   <ProtectYourPC>3</ProtectYourPC>
+#                 </OOBE>
+#                 <FirstLogonCommands>
+#                   <SynchronousCommand wcm:action="add">
+#                     <Order>1</Order>
+#                     <CommandLine>PowerShell -ExecutionPolicy Bypass -NoProfile F:\post-install.ps1</CommandLine>
+#                     <Description>Run post-install.ps1 script</Description>
+#                   </SynchronousCommand>
+#                 </FirstLogonCommands>
+#               </component>
+#             </settings>
+#           </unattend>
+#         post-install.ps1: |
+#           # Install virtio guest drivers
+#           Start-Process msiexec -Wait -ArgumentList '/i E:\virtio-win-gt-x64.msi /qn /passive /norestart'
+#           # Install qemu guest agent
+#           Start-Process msiexec -Wait -ArgumentList "/i E:\guest-agent\qemu-ga-x86_64.msi /qn /passive /norestart"
+#           # Rename cached unattend.xml to avoid it is picked up by sysprep
+#           mv C:\Windows\Panther\unattend.xml C:\Windows\Panther\unattend.install.xml
+#           # Eject CD, to avoid that the unattend.xml on the CD is picked up by sysprep
+#           (New-Object -COMObject Shell.Application).NameSpace(17).ParseName("F:").InvokeVerb("Eject")
+#   delegate_to: "{{ groups['witness'][0] }}"
+#   when: "vm_os == 'windows'"
 
 - name: Deploy virtual machine (Windows)
   kubernetes.core.k8s:
