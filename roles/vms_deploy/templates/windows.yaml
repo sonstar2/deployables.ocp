@@ -56,11 +56,11 @@ spec:
         devices:
           disks:
             - disk:
-                bus: virtio
+                bus: sata
               name: rootdisk
-            # - cdrom:
-            #     bus: sata
-            #   name: windows-drivers-disk
+            - cdrom:
+                bus: sata
+              name: windows-drivers-disk
           inputs:
             - bus: usb
               name: tablet
@@ -149,6 +149,6 @@ spec:
                   primary_group: Administrators
                   inactive: false
           name: cloudinitdisk
-        # - containerDisk:
-        #     image: 'registry.redhat.io/container-native-virtualization/virtio-win-rhel9@sha256:0c536c7aba76eb9c1e75a8f2dc2bbfa017e90314d55b242599ea41f42ba4434f'
-        #   name: windows-drivers-disk
+        - containerDisk:
+            image: 'registry.redhat.io/container-native-virtualization/virtio-win-rhel9@sha256:0c536c7aba76eb9c1e75a8f2dc2bbfa017e90314d55b242599ea41f42ba4434f'
+          name: windows-drivers-disk
