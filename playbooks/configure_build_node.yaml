@@ -56,10 +56,7 @@
         - url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-client-linux.tar.gz
           dest: /var/tmp/
           artifact: openshift-client-linux.tar.gz
-        - url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/stable/openshift-install-linux.tar.gz
-          dest: /var/tmp/
-          artifact: openshift-install-linux.tar.gz
-        - url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/4.14.15/openshift-install-linux.tar.gz
+        - url: https://developers.redhat.com/content-gateway/rest/mirror/pub/openshift-v4/clients/mirror-registry/latest/mirror-registry.tar.gz
           dest: /var/tmp/
           artifact: mirror-registry.tar.gz
         - url: https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/latest/oc-mirror.tar.gz
@@ -78,9 +75,6 @@
         - src_path: /var/tmp/openshift-client-linux.tar.gz
           dest_path: /usr/local/bin/
           artifact: oc
-        - src_path: /var/tmp/openshift-install-linux.tar.gz
-          dest_path: /usr/local/bin/
-          artifact: openshift-install
         - src_path: /var/tmp/mirror-registry.tar.gz
           dest_path: /usr/local/bin/
           artifact: mirror-registry

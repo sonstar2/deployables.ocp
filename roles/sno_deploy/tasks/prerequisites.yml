@@ -24,6 +24,36 @@
     - /usr/bin/nmstatectl
   become: true
 
+- name: Configure ImageContentSourcePolicy to pull binaries
+  ansible.builtin.copy:
+    content: |
+      ---
+      apiVersion: operator.openshift.io/v1alpha1
+      kind: ImageContentSourcePolicy
+      metadata:
+        name: release-0
+      spec:
+        repositoryDigestMirrors:
+        - mirrors:
+          - {{ groups['witness'][0] }}:8443/openshift/release
+          source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+        - mirrors:
+          - {{ groups['witness'][0] }}:8443/openshift/release-images
+          source: quay.io/openshift-release-dev/ocp-release
+    dest: /home/ansible/icsp.yaml
+    owner: ansible
+    group: ansible
+    mode: u=rwX,g=rwX,o=rX
+
+- name: Pull binaries (from mirror registry)
+  ansible.builtin.shell:
+    cmd: |
+      oc adm release extract --insecure --command=openshift-install --icsp-file=./icsp.yaml
+      mv openshift-install /usr/local/bin/openshift-install
+      chown root:root /usr/local/bin/openshift-install
+      chmod +x /usr/local/bin/openshift-install
+    creates: /usr/local/bin/openshift-install
+
 - name: Ensure the Ansible user has correct permissions for libvirt
   ansible.builtin.user:
     name: ansible
