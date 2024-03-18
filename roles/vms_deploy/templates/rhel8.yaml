@@ -62,14 +62,14 @@ spec:
           interfaces:
 {% if vm_enable_default_network %}
             - masquerade: {}
-              model: e1000e
+              model: virtio
               name: default
 {% endif %}
 {% if vm_networks is defined %}
 {% for interface in vm_networks %}
 {% if interface.type == "bridge" %}
             - bridge: {}
-              model: e1000e
+              model: virtio
 {% if interface.mac is defined %}
               macAddress: {{ interface.mac }}
 {% else %}
