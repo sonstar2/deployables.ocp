@@ -1,0 +1,16 @@
+---
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  name: "{{ cluster_name }}-{{ unid }}"
+  labels:
+    name: "{{ cluster_name }}-{{ unid }}"
+    cloud: auto-detect
+    vendor: auto-detect
+    cluster.open-cluster-management.io/clusterset: default
+    cluster-type: spoke
+    cluster-upgrades: automatic
+    cluster-compliance: strict
+  annotations: {}
+spec:
+  hubAcceptsClient: true
