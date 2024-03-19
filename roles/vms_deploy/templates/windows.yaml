@@ -123,10 +123,6 @@ spec:
             memory: {{ vm_memory | default('8') }}Gi
         hostname: {{ inventory_hostname }}
       networks:
-{% if vm_enable_default_network %}
-        - pod: {}
-          name: default
-{% endif %}
 {% if vm_networks is defined %}
 {% for interface in vm_networks %}
 {% if interface.type == "bridge" %}
@@ -135,6 +131,10 @@ spec:
           name: nic{{ loop.index0 | string }}-{{ interface.source_vlan | string }}
 {% endif %}
 {% endfor %}
+{% endif %}
+{% if vm_enable_default_network %}
+        - pod: {}
+          name: default
 {% endif %}
       terminationGracePeriodSeconds: 3600
       volumes:
