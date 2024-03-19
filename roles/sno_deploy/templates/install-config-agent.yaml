@@ -105,3 +105,9 @@ imageContentSources:
   - mirrors:
     - "{{ groups['witness'][0] }}:8443/openshift-service-mesh"
     source: registry.redhat.io/openshift-service-mesh
+  - mirrors:
+    - "{{ groups['witness'][0] }}:8443/advanced-cluster-security"
+    source: registry.redhat.io/advanced-cluster-security
+  - mirrors:
+    - "{{ groups['witness'][0] }}:8443/rhacm2"
+    source: registry.redhat.io/rhacm2

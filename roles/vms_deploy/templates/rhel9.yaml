@@ -109,7 +109,7 @@ spec:
         - cloudInitConfigDrive:
             userData: |-
               #cloud-config
-              user: cloud-user
+              user: {{ ansible_user }}
               password: {{ ansible_password }}
               chpasswd: { expire: False }
           name: cloudinitdisk
