@@ -111,3 +111,6 @@ imageContentSources:
   - mirrors:
     - "{{ groups['witness'][0] }}:8443/rhacm2"
     source: registry.redhat.io/rhacm2
+  - mirrors:
+    - "{{ groups['witness'][0] }}:8443/multicluster-engine"
+    source: registry.redhat.io/multicluster-engine
