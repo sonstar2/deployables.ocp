@@ -1,0 +1,44 @@
+{
+    "control":[
+        { "VTOY_MAX_SEARCH_LEVEL": "0" },
+        { "VTOY_LINUX_REMOUNT": "1" },
+        { "VTOY_SECONDARY_BOOT_MENU": "0" },
+        { "VTOY_MENU_TIMEOUT": "10" }
+    ],
+    "theme":{
+        "display_mode": "serial_console"
+    },
+    "theme_legacy":{
+        "display_mode": "serial_console"
+    },
+    "theme_uefi":{
+        "display_mode": "serial_console"
+    },
+    "auto_install":[
+        {
+            "image": "/rhel-9.3-x86_64-dvd.iso",
+            "template":[
+                "/ventoy/ks.cfg"
+            ],
+            "timeout": 10,
+            "autosel": 1
+        }
+    ],
+    "conf_replace": [
+        {
+            "iso": "/rhel-9.3-x86_64-dvd.iso",
+            "org": "/isolinux/isolinux.cfg",
+            "new": "/ventoy/isolinux.cfg"
+        },
+        {
+            "iso": "/rhel-9.3-x86_64-dvd.iso",
+            "org": "/isolinux/grub.conf",
+            "new": "/ventoy/isolinux-grub.conf"
+        },
+        {
+            "iso": "/rhel-9.3-x86_64-dvd.iso",
+            "org": "/EFI/BOOT/grub.conf",
+            "new": "/ventoy/efi-boot-grub.cfg"
+        }
+    ]
+}
