@@ -38,29 +38,6 @@
 #     creates: "/var/tmp/build/rhel-9.3-x86_64-dvd.iso"
 #   become: false
 
-# - name: Create ISO
-#   ansible.builtin.shell:
-#     cmd: |
-#       mkksiso -c 'inst.ks=hd:LABEL=RHEL-9-3-0-BaseOS-x86_64/ks.cfg' \
-#       -c 'console=tty0 console=ttyS0,115200' \
-#       --ks /var/tmp/build/ks.cfg \
-#       /var/tmp/build/rhel-9.3-x86_64-dvd.iso \
-#       /var/tmp/build/witness-node.iso
-#   become: true
-
-# - name: Ensure dependencies directory exists
-#   ansible.builtin.file:
-#     path: "{{ usb_working_dir }}/dependencies"
-#     state: directory
-#   become: false
-
-# - name: Ensure test content resides in the dependencies directory
-#   ansible.builtin.copy:
-#     content: |
-#       This is a test for copying of the dependencies automatically
-#     dest: "{{ usb_working_dir }}/dependencies/test.txt"
-#   become: false
-
 # Ventoy method
 - name: Ensure Ventoy is available
   ansible.builtin.copy:
@@ -95,7 +72,6 @@
     dependencies_working_dir: "/run/media/{{ lookup('env', 'USER') }}/dependencies"
   become: false
 
-
 - name: Ensure ventoy directory exists
   ansible.builtin.file:
     path: "{{ ventoy_working_dir }}/ventoy"
@@ -109,18 +85,36 @@
     mode: u=rwX,g=rwX,o=-
   become: false
 
-# - name: Ensure RHEL9 ISO is available locally
-#   ansible.builtin.uri:
-#     url: "{{ rhel9_iso_url }}"
-#     mode: u=rwX,g=rwX,o=-
-#     dest: "{{ ventoy_working_dir }}"
-#     decompress: false
-#     creates: "{{ ventoy_working_dir }}/rhel-9.3-x86_64-dvd.iso"
-#   become: false
+- name: Ensure RHEL9 ISO is available locally
+  ansible.builtin.uri:
+    url: "{{ rhel9_iso_url }}"
+    mode: u=rwX,g=rwX,o=-
+    dest: "/var/tmp/build"
+    decompress: false
+    creates: "/var/tmp/build/rhel-9.3-x86_64-dvd.iso"
+  become: false
+  register: rhel9_iso_download
+
+- name: Check if /var/tmp/build/witness-node.iso exists
+  ansible.builtin.stat:
+    path: /var/tmp/build/witness-node.iso
+  register: witness_node_iso
+  failed_when: false
+
+- name: Create ISO
+  ansible.builtin.shell:
+    cmd: |
+      mkksiso -c 'inst.txt' \
+      -c 'inst.repo=hd:LABEL=RHEL-9-3-0-BaseOS-x86_64/BaseOS' \
+      -c 'console=tty0 console=ttyS0,115200' \
+      /var/tmp/build/rhel-9.3-x86_64-dvd.iso \
+      /var/tmp/build/witness-node.iso
+  become: true
+  when: "rhel9_iso_download.changed or not witness_node_iso.stat.exists"
 
 - name: Ensure the RHEL ISO is available
   ansible.builtin.copy:
-    src: "/var/tmp/build/rhel-9.3-x86_64-dvd.iso"
+    src: "/var/tmp/build/witness-node.iso"
     dest: "{{ ventoy_working_dir }}/rhel-9.3-x86_64-dvd.iso"
     mode: u=rwX,g=rwX,o=-
   become: true
@@ -132,32 +126,11 @@
     mode: u=rwX,g=rwX,o=-
   become: false
 
-- name: Ensure the isolinux/isolinux.cfg file is available
-  ansible.builtin.copy:
-    content: "{{ lookup('file', 'isolinux.cfg') }}"
-    dest: "{{ ventoy_working_dir }}/ventoy/isolinux.cfg"
-    mode: u=rwX,g=rwX,o=-
-  become: false
-
-- name: Ensure the isolinux/grub.cfg file is available
-  ansible.builtin.copy:
-    content: "{{ lookup('file', 'isolinux-grub.conf') }}"
-    dest: "{{ ventoy_working_dir }}/ventoy/isolinux-grub.conf"
-    mode: u=rwX,g=rwX,o=-
-  become: false
-
-- name: Ensure the efi/boot/grub.cfg file is available
-  ansible.builtin.copy:
-    content: "{{ lookup('file', 'efi-boot-grub.cfg') }}"
-    dest: "{{ ventoy_working_dir }}/ventoy/efi-boot-grub.cfg"
-    mode: u=rwX,g=rwX,o=-
-  become: false
-
 - name: Ensure test content resides in the dependencies directory
   ansible.builtin.copy:
     content: |
       This is a test for copying of the dependencies automatically
-    dest: "{{ ventoy_working_dir }}/test.txt"
+    dest: "{{ dependencies_working_dir }}/test.txt"
   become: false
 
 - name: Final
