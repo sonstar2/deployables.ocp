@@ -46,3 +46,20 @@ spec:
   storageImport:
     insecureRegistries:
       - <change-me>
+  dataImportCronTemplates:
+  - metadata:
+      annotations:
+        dataimportcrontemplate.kubevirt.io/enable: 'false'
+      name: centos-7-image-cron
+  - metadata:
+      annotations:
+        dataimportcrontemplate.kubevirt.io/enable: 'false'
+      name: centos-8-stream-cron
+  - metadata:
+      annotations:
+        dataimportcrontemplate.kubevirt.io/enable: 'false'
+      name: centos-9-stream-cron
+  - metadata:
+      annotations:
+        dataimportcrontemplate.kubevirt.io/enable: 'false'
+      name: fedora-image-cron

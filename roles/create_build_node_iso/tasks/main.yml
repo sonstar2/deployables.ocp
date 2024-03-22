@@ -1,87 +1,55 @@
 ---
 # tasks file for create_build_node_iso
-- name: Ensure Ventoy is available
-  ansible.builtin.copy:
-    src: "{{ lookup('env', 'PWD') }}/{{ artifact_directory }}/ventoy.tar.gz"
-    dest: "/var/tmp/ventoy.tar.gz"
+- name: Ensure ISO creation prerequisites are installed
+  ansible.builtin.dnf:
+    name: "{{ item }}"
+    state: present
+  become: true
+  loop:
+    - lorax
+    - bsdtar
+
+- name: Ensure build directory exists
+  ansible.builtin.file:
+    path: /var/tmp/build
+    state: directory
   become: false
 
-- name: Ensure Ventory directory exists
-  ansible.builtin.file:
-    path: /opt/ventoy
-    state: directory
-
-- name: Untar the Ventoy
-  ansible.builtin.unarchive:
-    creates: "/opt/ventoy/Ventoy2Disk.sh"
-    dest: "/opt/ventoy"
-    mode: u=rwx,g=rwx,o=rx
-    owner: root
-    group: root
-    remote_src: true
-    src: "/var/tmp/ventoy.tar.gz"
-    extra_opts:
-      - '--strip-components=2'
-
-- name: Set Ventoy working directoy fact
+- name: Set USB working directoy fact
   ansible.builtin.set_fact: 
-    ventoy_working_dir: "/run/media/{{ lookup('env', 'USER') }}/Ventoy"
-  become: false
-
-- name: Ensure ventoy directory exists
-  ansible.builtin.file:
-    path: "{{ ventoy_working_dir }}/ventoy"
-    state: directory
-  become: false
-
-- name: Ensure ventoy config is available
-  ansible.builtin.copy:
-    content: "{{ lookup('template', 'ventoy.json') }}"
-    dest: "{{ ventoy_working_dir }}/ventoy/ventoy.json"
-    mode: u=rwX,g=rwX,o=-
-  become: false
-
-- name: Ensure RHEL9 ISO is available locally
-  ansible.builtin.uri:
-    url: "{{ rhel9_iso_url }}"
-    mode: u=rwX,g=rwX,o=-
-    dest: "{{ ventoy_working_dir }}"
-    decompress: false
-    creates: "{{ ventoy_working_dir }}/rhel-9.3-x86_64-dvd.iso"
+    usb_working_dir: "/run/media/{{ lookup('env', 'USER') }}"
   become: false
 
 - name: Ensure the kickstart file is available
   ansible.builtin.copy:
     content: "{{ lookup('template', 'ks.cfg') }}"
-    dest: "{{ ventoy_working_dir }}/ventoy/ks.cfg"
+    dest: "/var/tmp/build/ks.cfg"
     mode: u=rwX,g=rwX,o=-
   become: false
+  register: kickstart_config
 
-- name: Ensure the isolinux/isolinux.cfg file is available
-  ansible.builtin.copy:
-    content: "{{ lookup('file', 'isolinux.cfg') }}"
-    dest: "{{ ventoy_working_dir }}/ventoy/isolinux.cfg"
+- name: Ensure RHEL9 ISO is available locally
+  ansible.builtin.uri:
+    url: "{{ rhel9_iso_url }}"
     mode: u=rwX,g=rwX,o=-
+    dest: "/var/tmp/build/"
+    decompress: false
+    creates: "/var/tmp/build/rhel-9.3-x86_64-dvd.iso"
   become: false
 
-- name: Ensure the isolinux/grub.cfg file is available
-  ansible.builtin.copy:
-    content: "{{ lookup('file', 'isolinux-grub.conf') }}"
-    dest: "{{ ventoy_working_dir }}/ventoy/isolinux-grub.conf"
-    mode: u=rwX,g=rwX,o=-
-  become: false
-
-- name: Ensure the efi/boot/grub.cfg file is available
-  ansible.builtin.copy:
-    content: "{{ lookup('file', 'efi-boot-grub.cfg') }}"
-    dest: "{{ ventoy_working_dir }}/ventoy/efi-boot-grub.cfg"
-    mode: u=rwX,g=rwX,o=-
-  become: false
-
+- name: Create ISO
+  ansible.builtin.shell:
+    cmd: |
+      mkksiso -c 'inst.ks=hd:LABEL=RHEL-9-3-0-BaseOS-x86_64/ks.cfg' \
+      -c 'console=tty0 console=ttyS0,115200' \
+      --ks /var/tmp/build/ks.cfg \
+      /var/tmp/build/rhel-9.3-x86_64-dvd.iso \
+      /var/tmp/build/witness-node.iso
+  become: true
 
 - name: Ensure dependencies directory exists
   ansible.builtin.file:
-    path: "{{ ventoy_working_dir }}/dependencies"
+    path: "{{ usb_working_dir }}/dependencies"
     state: directory
   become: false
 
@@ -89,8 +57,100 @@
   ansible.builtin.copy:
     content: |
       This is a test for copying of the dependencies automatically
-    dest: "{{ ventoy_working_dir }}/dependencies/test.txt"
+    dest: "{{ usb_working_dir }}/dependencies/test.txt"
   become: false
+
+# - name: Ensure Ventoy is available
+#   ansible.builtin.copy:
+#     src: "{{ lookup('env', 'PWD') }}/{{ artifact_directory }}/ventoy.tar.gz"
+#     dest: "/var/tmp/ventoy.tar.gz"
+#   become: false
+
+# - name: Ensure Ventory directory exists
+#   ansible.builtin.file:
+#     path: /opt/ventoy
+#     state: directory
+
+# - name: Untar the Ventoy
+#   ansible.builtin.unarchive:
+#     creates: "/opt/ventoy/Ventoy2Disk.sh"
+#     dest: "/opt/ventoy"
+#     mode: u=rwx,g=rwx,o=rx
+#     owner: root
+#     group: root
+#     remote_src: true
+#     src: "/var/tmp/ventoy.tar.gz"
+#     extra_opts:
+#       - '--strip-components=2'
+
+# - name: Set Ventoy working directoy fact
+#   ansible.builtin.set_fact: 
+#     ventoy_working_dir: "/run/media/{{ lookup('env', 'USER') }}/Ventoy"
+#   become: false
+
+# - name: Ensure ventoy directory exists
+#   ansible.builtin.file:
+#     path: "{{ ventoy_working_dir }}/ventoy"
+#     state: directory
+#   become: false
+
+# - name: Ensure ventoy config is available
+#   ansible.builtin.copy:
+#     content: "{{ lookup('template', 'ventoy.json') }}"
+#     dest: "{{ ventoy_working_dir }}/ventoy/ventoy.json"
+#     mode: u=rwX,g=rwX,o=-
+#   become: false
+
+# - name: Ensure RHEL9 ISO is available locally
+#   ansible.builtin.uri:
+#     url: "{{ rhel9_iso_url }}"
+#     mode: u=rwX,g=rwX,o=-
+#     dest: "{{ ventoy_working_dir }}"
+#     decompress: false
+#     creates: "{{ ventoy_working_dir }}/rhel-9.3-x86_64-dvd.iso"
+#   become: false
+
+# - name: Ensure the kickstart file is available
+#   ansible.builtin.copy:
+#     content: "{{ lookup('template', 'ks.cfg') }}"
+#     dest: "{{ ventoy_working_dir }}/ventoy/ks.cfg"
+#     mode: u=rwX,g=rwX,o=-
+#   become: false
+
+# - name: Ensure the isolinux/isolinux.cfg file is available
+#   ansible.builtin.copy:
+#     content: "{{ lookup('file', 'isolinux.cfg') }}"
+#     dest: "{{ ventoy_working_dir }}/ventoy/isolinux.cfg"
+#     mode: u=rwX,g=rwX,o=-
+#   become: false
+
+# - name: Ensure the isolinux/grub.cfg file is available
+#   ansible.builtin.copy:
+#     content: "{{ lookup('file', 'isolinux-grub.conf') }}"
+#     dest: "{{ ventoy_working_dir }}/ventoy/isolinux-grub.conf"
+#     mode: u=rwX,g=rwX,o=-
+#   become: false
+
+# - name: Ensure the efi/boot/grub.cfg file is available
+#   ansible.builtin.copy:
+#     content: "{{ lookup('file', 'efi-boot-grub.cfg') }}"
+#     dest: "{{ ventoy_working_dir }}/ventoy/efi-boot-grub.cfg"
+#     mode: u=rwX,g=rwX,o=-
+#   become: false
+
+
+# - name: Ensure dependencies directory exists
+#   ansible.builtin.file:
+#     path: "{{ ventoy_working_dir }}/dependencies"
+#     state: directory
+#   become: false
+
+# - name: Ensure test content resides in the dependencies directory
+#   ansible.builtin.copy:
+#     content: |
+#       This is a test for copying of the dependencies automatically
+#     dest: "{{ ventoy_working_dir }}/dependencies/test.txt"
+#   become: false
 
 - name: Final
   ansible.builtin.debug:
