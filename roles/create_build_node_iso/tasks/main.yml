@@ -1,44 +1,5 @@
 ---
 # tasks file for create_build_node_iso
-# mkksiso method
-# - name: Ensure ISO creation prerequisites are installed
-#   ansible.builtin.dnf:
-#     name: "{{ item }}"
-#     state: present
-#   become: true
-#   loop:
-#     - lorax
-#     - bsdtar
-
-# - name: Ensure build directory exists
-#   ansible.builtin.file:
-#     path: /var/tmp/build
-#     state: directory
-#   become: false
-
-# - name: Set USB working directoy fact
-#   ansible.builtin.set_fact: 
-#     usb_working_dir: "/run/media/{{ lookup('env', 'USER') }}"
-#   become: false
-
-# - name: Ensure the kickstart file is available
-#   ansible.builtin.copy:
-#     content: "{{ lookup('template', 'ks.cfg') }}"
-#     dest: "/var/tmp/build/ks.cfg"
-#     mode: u=rwX,g=rwX,o=-
-#   become: false
-#   register: kickstart_config
-
-# - name: Ensure RHEL9 ISO is available locally
-#   ansible.builtin.uri:
-#     url: "{{ rhel9_iso_url }}"
-#     mode: u=rwX,g=rwX,o=-
-#     dest: "/var/tmp/build/"
-#     decompress: false
-#     creates: "/var/tmp/build/rhel-9.3-x86_64-dvd.iso"
-#   become: false
-
-# Ventoy method
 - name: Ensure Ventoy is available
   ansible.builtin.copy:
     src: "{{ lookup('env', 'PWD') }}/{{ artifact_directory }}/ventoy.tar.gz"
@@ -105,7 +66,6 @@
   ansible.builtin.shell:
     cmd: |
       mkksiso -c 'inst.txt' \
-      -c 'inst.repo=hd:LABEL=RHEL-9-3-0-BaseOS-x86_64/BaseOS' \
       -c 'console=tty0 console=ttyS0,115200' \
       /var/tmp/build/rhel-9.3-x86_64-dvd.iso \
       /var/tmp/build/witness-node.iso
