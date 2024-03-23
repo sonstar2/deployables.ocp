@@ -93,6 +93,31 @@
     dest: "{{ dependencies_working_dir }}/test.txt"
   become: false
 
+- name: Ensure the run-setup-playbook.sh script exists
+  ansible.builtin.copy:
+    content: |
+      /usr/bin/env bash
+      set -eux pipefail
+
+      # Ensure RPM deps are installed
+      cd /home/ansible/dependencies/rpms
+      dnf install -y ./*.rpm
+
+      # Ensure Python deps are installed
+      cd /home/ansible/dependencies/python
+      python3 -m pip install --no-index --find-links=. -r requirements.txt
+
+      # Ensure Ansible deps are installed
+      cd /home/ansible/dependencies/ansible
+      ansible-galaxy install -r requirements.yml
+
+      # Run the setup playbook
+      cd /home/ansible/dependencies/deployables-deploy
+      ansible-playbook -vb --vault-password-file ./vault-password ./vault 2-configure-build-node.yaml
+    dest: "{{ dependencies_working_dir }}/run-setup-playbook.sh"
+    mode: u=rwx,g=rwx,o=rx
+  become: false
+
 - name: Final
   ansible.builtin.debug:
     msg: |
