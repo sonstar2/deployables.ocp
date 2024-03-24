@@ -48,6 +48,14 @@
         group: ansible
         mode: u=rwX,g=rX,o=-
 
+    - name: Ensure /home/ansible/.docker directory exists
+      ansible.builtin.file:
+        path: /home/ansible/.docker
+        state: directory
+        owner: ansible
+        group: ansible
+        mode: u=rwX,g=rwX,o=-
+
     - name: Configure pull-secret
       ansible.builtin.copy:
         content: "{\"auths\": {\"{{ groups['witness'][0] }}:8443\": {\"auth\": \"{{ ('init:' + mirror_registry_init_password) | b64encode }}\", \"email\": \"\"}}}" # noqa yaml[line-length]
@@ -55,10 +63,6 @@
         owner: ansible
         group: ansible
         mode: u=rwX,g=rX,o=-
-
-    - name: Deploy and configure GitLab
-      ansible.builtin.import_role:
-        name: gitlab
 
     - name: Install OpenShift Prerequisites (Pulls from Internet)
       ansible.builtin.uri:
@@ -102,6 +106,10 @@
     - name: Provision Quay
       ansible.builtin.import_role:
         name: provision_quay
+
+    - name: Deploy and configure GitLab
+      ansible.builtin.import_role:
+        name: gitlab
 
     - name: Prepare for OpenShift Deployment
       ansible.builtin.import_role:
