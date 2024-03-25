@@ -119,7 +119,7 @@
 
       # Run the setup playbook
       cd /home/ansible/dependencies/deployables-deploy
-      ansible-playbook ./vault 2-configure-build-node.yaml -vb --vault-password-file ./vault-password
+      ansible-playbook 2-configure-build-node.yaml -vb --vault-password-file ./vault-password
 
       echo "Witness node is now configured"
     dest: "{{ dependencies_working_dir }}/run-setup-playbook.sh"
