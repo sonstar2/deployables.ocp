@@ -4,10 +4,26 @@
   ansible.builtin.import_tasks:
     file: prerequisites.yml
 
-- name: Configure create_agent_iso script
+- name: Configure deploy-snoa script
   ansible.builtin.copy:
-    dest: /usr/local/bin/create_agent_isos.sh
+    dest: /usr/local/bin/deploy-snoa
     owner: root
     group: root
     mode: u=rwx,g=rx,o=rx
-    src: create_agent_isos.sh
+    src: "{{ lookup('template', 'deploy-snoa.sh' }}"
+
+- name: Configure deploy-snob script
+  ansible.builtin.copy:
+    dest: /usr/local/bin/deploy-snob
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+    src: "{{ lookup('template', 'deploy-snob.sh' }}"
+
+- name: Configure deploy-openshift-all-nodes script
+  ansible.builtin.copy:
+    dest: /usr/local/bin/deploy-openshift-all-nodes
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+    src: "{{ lookup('template', 'deploy-openshift-all-nodes.sh' }}"
