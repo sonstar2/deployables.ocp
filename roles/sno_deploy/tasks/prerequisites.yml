@@ -48,7 +48,7 @@
 - name: Pull binaries (from mirror registry)
   ansible.builtin.shell:
     cmd: |
-      /usr/local/bin/oc adm release extract --insecure --command=openshift-install --icsp-file=./icsp.yaml
+      /usr/local/bin/oc adm release extract --insecure --command=openshift-install --icsp-file=./icsp.yaml "$(hostname -f):8443/openshift/release-images:{{ openshift_version }}-x86_64"
       mv openshift-install /usr/local/bin/openshift-install
       chown root:root /usr/local/bin/openshift-install
       chmod +x /usr/local/bin/openshift-install

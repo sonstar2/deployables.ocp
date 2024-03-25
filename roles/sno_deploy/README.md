@@ -3,6 +3,10 @@ Role Name
 
 A brief description of the role goes here.
 
+> **Note:**
+>
+> The `Pull binaries (from mirror registry)` task specifies a specific `z` release image. Please ensure this task is updated with the appropriate image tag.
+
 Requirements
 ------------
 
