@@ -1,7 +1,6 @@
 ---
 - name: Configure the Build Node
   hosts: witness
-  connection: local
   gather_facts: true
   become: true
   pre_tasks:
