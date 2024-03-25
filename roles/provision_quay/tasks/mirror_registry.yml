@@ -35,14 +35,14 @@
     state: directory
   become: true
 
-- name: Copy over image archive for initial import
-  ansible.builtin.copy:
-    src: "{{ inventory_dir }}/{{ artifact_directory }}/archive/mirror_seq1_000000.tar"
-    dest: /home/ansible/
-    mode: u=rwX,g=rwX,o=rX
-    owner: ansible
-    group: ansible
-  become: false
+# - name: Copy over image archive for initial import
+#   ansible.builtin.copy:
+#     src: "{{ inventory_dir }}/{{ artifact_directory }}/archive/mirror_seq1_000000.tar"
+#     dest: /home/ansible/
+#     mode: u=rwX,g=rwX,o=rX
+#     owner: ansible
+#     group: ansible
+#   become: false
 
 - name: Deploy the mirror registry
   ansible.builtin.shell:
@@ -130,7 +130,7 @@
       --password "{{ mirror_registry_init_password }}" &&
       /usr/local/bin/oc-mirror
       --dest-skip-tls
-      --from=/home/ansible/mirror_seq1_000000.tar
+      --from=/home/ansible/dependencies/archive/mirror_seq1_000000.tar
       docker://{{ groups['witness'][0] }}:8443
     creates: /home/ansible/oc-mirror-workspace/publish/.metadata.json
   become: false
