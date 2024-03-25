@@ -24,12 +24,12 @@
       - '--strip-components=2'
 
 - name: Set Ventoy working directoy fact
-  ansible.builtin.set_fact: 
+  ansible.builtin.set_fact:
     ventoy_working_dir: "/run/media/{{ lookup('env', 'USER') }}/Ventoy"
   become: false
 
 - name: Set dependencies working directoy fact
-  ansible.builtin.set_fact: 
+  ansible.builtin.set_fact:
     dependencies_working_dir: "/run/media/{{ lookup('env', 'USER') }}/dependencies"
   become: false
 
@@ -44,6 +44,12 @@
     content: "{{ lookup('template', 'ventoy.json') }}"
     dest: "{{ ventoy_working_dir }}/ventoy/ventoy.json"
     mode: u=rwX,g=rwX,o=-
+  become: false
+
+- name: Ensure build directory exists
+  ansible.builtin.file:
+    path: "/var/tmp/build"
+    state: directory
   become: false
 
 - name: Ensure RHEL9 ISO is available locally
