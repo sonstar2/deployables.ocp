@@ -23,22 +23,5 @@
             "timeout": 10,
             "autosel": 1
         }
-    ],
-    "conf_replace": [
-        {
-            "iso": "/rhel-9.3-x86_64-dvd.iso",
-            "org": "/isolinux/isolinux.cfg",
-            "new": "/ventoy/isolinux.cfg"
-        },
-        {
-            "iso": "/rhel-9.3-x86_64-dvd.iso",
-            "org": "/isolinux/grub.conf",
-            "new": "/ventoy/isolinux-grub.conf"
-        },
-        {
-            "iso": "/rhel-9.3-x86_64-dvd.iso",
-            "org": "/EFI/BOOT/grub.conf",
-            "new": "/ventoy/efi-boot-grub.cfg"
-        }
     ]
 }
