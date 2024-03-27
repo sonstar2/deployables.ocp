@@ -8,7 +8,7 @@ sudo cp /home/ansible/sno-b/agent.x86_64.iso /home/ansible/ocp-isos/sno-b.iso
 CURRENT_VIRTUAL_MEDIA=$(curl --insecure -u 'root:${IDRAC_PASSWORD}' -H "Content-Type: application/json" https://{{ sno_b_idrac_ip }}/redfish/v1/Systems/System.Embedded.1/VirtualMedia/1 | jq '.Image')
 
 # Eject virtual media if required
-if [[ ${CURENT_VIRTUAL_MEDIA} != *'null'* ]]; then
+if [[ ${CURRENT_VIRTUAL_MEDIA} != *'null'* ]]; then
   curl --insecure \
   -u 'root:${IDRAC_PASSWORD}' \
   -X POST \
@@ -21,7 +21,7 @@ curl --insecure \
 -u 'root:${IDRAC_PASSWORD}' \
 -X POST \
 -H "Content-Type: application/json" \
--d '{"Image": "https://{{ inventory_hostname }}:8888/sno-b.iso", "Inserted": true}'\
+-d '{"Image": "https://{{ inventory_hostname }}:8888/sno-b.iso", "Inserted": true}' \
 https://{{ sno_b_idrac_ip }}/redfish/v1/Systems/System.Embedded.1/VirtualMedia/1/Actions/VirtualMedia.InsertMedia
 
 # Override next boot
@@ -37,7 +37,7 @@ curl --insecure \
 -u 'root:${IDRAC_PASSWORD}' \
 -X POST \
 -H "Content-Type: application/json" \
--d '{"ResetType": "On"}'\
+-d '{"ResetType": "On"}' \
 https://{{ sno_b_idrac_ip }}/redfish/v1/Systems/System.Embedded.1/Actions/ComputerSystem.Reset
 
 openshift-install --dir /home/ansible/sno-b/ agent wait-for bootstrap-complete --log-level=info

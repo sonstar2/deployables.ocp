@@ -7,7 +7,7 @@ spec:
     - name: httpd-app
       image: "{{ inventory_hostname }}:8443/ubi9/httpd-24:latest"
       ports:
-        - containerPort: 8888
+        - containerPort: 8080
           hostPort: 8888
       volumeMounts:
         - mountPath: /var/www/html:Z
