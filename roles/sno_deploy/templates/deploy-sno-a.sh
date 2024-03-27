@@ -4,7 +4,7 @@ set -euo pipefail
 export IDRAC_PASSWORD="{{ sno_a_idrac_password }}"
 openshift-install --dir /home/ansible/sno-a/ agent create image
 
-cp /home/ansible/sno-a/agent.x86_64.iso /home/ansible/ocp-isos/sno-a.iso
+sudo cp /home/ansible/sno-a/agent.x86_64.iso /home/ansible/ocp-isos/sno-a.iso
 CURRENT_VIRTUAL_MEDIA=$(curl --insecure -u 'root:${IDRAC_PASSWORD}' -H "Content-Type: application/json" https://{{ sno_a_idrac_ip }}/redfish/v1/Systems/System.Embedded.1/VirtualMedia/1 | jq '.Image')
 
 # Eject virtual media if required

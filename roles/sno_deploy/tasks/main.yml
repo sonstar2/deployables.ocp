@@ -6,19 +6,19 @@
 
 - name: Configure deploy-snoa script
   ansible.builtin.copy:
-    dest: /usr/local/bin/deploy-snoa
+    dest: /usr/local/bin/deploy-sno-a
     owner: root
     group: root
     mode: u=rwx,g=rx,o=rx
-    content: "{{ lookup('template', 'deploy-snoa.sh') }}"
+    content: "{{ lookup('template', 'deploy-sno-a.sh') }}"
 
 - name: Configure deploy-snob script
   ansible.builtin.copy:
-    dest: /usr/local/bin/deploy-snob
+    dest: /usr/local/bin/deploy-sno-b
     owner: root
     group: root
     mode: u=rwx,g=rx,o=rx
-    content: "{{ lookup('template', 'deploy-snob.sh') }}"
+    content: "{{ lookup('template', 'deploy-sno-b.sh') }}"
 
 - name: Configure deploy-openshift-all-nodes script
   ansible.builtin.copy:
