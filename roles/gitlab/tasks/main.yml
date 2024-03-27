@@ -17,7 +17,7 @@
     group: root
     mode: u=rwX,g=rwX,o=-
 
-- name: Deploy GitLab
+- name: Deploy Containers
   ansible.builtin.import_role:
     name: redhat.rhel_system_roles.podman
 
