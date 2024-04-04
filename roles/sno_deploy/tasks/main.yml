@@ -27,3 +27,19 @@
     group: root
     mode: u=rwx,g=rx,o=rx
     content: "{{ lookup('template', 'deploy-openshift-all-nodes.sh') }}"
+
+- name: Configure deploy-core-services script
+  ansible.builtin.copy:
+    dest: /usr/local/bin/deploy-core-services
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+    content: "{{ lookup('template', 'deploy-core-services.sh') }}"
+
+- name: Configure reset-environment script
+  ansible.builtin.copy:
+    dest: /usr/local/bin/reset-environment
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+    content: "{{ lookup('template', 'reset-environment.sh') }}"
