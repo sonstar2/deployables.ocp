@@ -112,4 +112,6 @@ spec:
               user: {{ ansible_user }}
               password: {{ ansible_password }}
               chpasswd: { expire: False }
+              ssh_authorized_keys:
+                - "{{ ssh_pub_key }}"
           name: cloudinitdisk

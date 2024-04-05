@@ -40,6 +40,35 @@
       loop:
         - tmux
 
+    - name: Ensure /root/.ssh directory exists
+      ansible.builtin.file:
+        path: /root/.ssh
+        state: directory
+        owner: root
+        group: root
+        mode: u=rwX,g=rwX,o=-
+
+    - name: Configure ssh config
+      ansible.builtin.copy:
+        content: |
+          Host *.poc.lab.local
+            User ansible
+            IdentityFile ~/.ssh/id_ed25519
+            IdentitiesOnly yes
+            StrictHostKeyChecking no
+        dest: /root/.ssh
+        owner: root
+        group: root
+        mode: u=rwX,g=rX,o=-
+
+    - name: Configure ssh privatekey
+      ansible.builtin.copy:
+        content: "{{ ssh_private_key }}"
+        dest: /root/.ssh/id_ed25519
+        owner: root
+        group: root
+        mode: u=rX,g=-,o=-
+
     - name: Configure pull-secret
       ansible.builtin.copy:
         content: "{\"auths\": {\"{{ groups['witness'][0] }}:8443\": {\"auth\": \"{{ ('init:' + mirror_registry_init_password) | b64encode }}\", \"email\": \"\"}}}" # noqa yaml[line-length]
