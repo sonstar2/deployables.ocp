@@ -43,3 +43,27 @@
     group: root
     mode: u=rwx,g=rx,o=rx
     content: "{{ lookup('template', 'reset-environment.sh') }}"
+
+- name: Configure deploy-logistics-services script
+  ansible.builtin.copy:
+    dest: /usr/local/bin/deploy-logistics-services
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+    content: "{{ lookup('template', 'deploy-logistics-services.sh') }}"
+
+- name: Configure deploy-medical-services script
+  ansible.builtin.copy:
+    dest: /usr/local/bin/deploy-medical-services
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+    content: "{{ lookup('template', 'deploy-medical-services.sh') }}"
+
+- name: Configure deploy-mission-services script
+  ansible.builtin.copy:
+    dest: /usr/local/bin/deploy-mission-services
+    owner: root
+    group: root
+    mode: u=rwx,g=rx,o=rx
+    content: "{{ lookup('template', 'deploy-mission-services.sh') }}"
