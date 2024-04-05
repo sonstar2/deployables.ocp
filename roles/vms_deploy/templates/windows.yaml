@@ -69,11 +69,6 @@ spec:
               name: tablet
               type: tablet
           interfaces:
-{% if vm_enable_default_network %}
-            - masquerade: {}
-              model: e1000e
-              name: default
-{% endif %}
 {% if vm_networks is defined %}
 {% for interface in vm_networks %}
 {% if interface.type == "bridge" %}
@@ -87,6 +82,11 @@ spec:
               name: nic{{ loop.index0 | string }}-{{ interface.source_vlan | string }}
 {% endif %}
 {% endfor %}
+{% endif %}
+{% if vm_enable_default_network %}
+            - masquerade: {}
+              model: e1000e
+              name: default
 {% endif %}
           networkInterfaceMultiqueue: true
           rng: {}
