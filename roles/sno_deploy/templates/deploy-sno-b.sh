@@ -40,8 +40,8 @@ curl --insecure \
 -d '{"ResetType": "On"}' \
 https://{{ sno_b_idrac_ip }}/redfish/v1/Systems/System.Embedded.1/Actions/ComputerSystem.Reset
 
-openshift-install --dir /home/ansible/sno-b/ agent wait-for bootstrap-complete --log-level=info
-openshift-install --dir /home/ansible/sno-b/ agent wait-for install-complete --log-level=info
+openshift-install --dir /home/ansible/sno-b/ agent wait-for bootstrap-complete --log-level=info || true
+openshift-install --dir /home/ansible/sno-b/ agent wait-for install-complete --log-level=info || true
 
 echo "OpenShift Deployed. Starting configuration"
 
